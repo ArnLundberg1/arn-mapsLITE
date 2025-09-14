@@ -12,31 +12,45 @@
   <!-- Leaflet Routing -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css"/>
   <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
-
 </head>
 <body>
   <div id="map"></div>
 
-  <!-- Toppmeny -->
+  <!-- Sökfält -->
   <header>
     <input type="text" id="searchInput" placeholder="Sök plats eller adress…">
     <button id="searchBtn">Sök</button>
+    <button id="settingsBtn">⚙️ Inställningar</button>
+    <button id="shareBtn">Dela länk</button>
+  </header>
+
+  <!-- Inställningar-panel -->
+  <div id="settingsPanel" class="hidden">
+    <h3>Inställningar</h3>
+
+    <label for="langSelect">Språk:</label>
     <select id="langSelect">
       <option value="sv">Svenska</option>
       <option value="en">English</option>
       <option value="de">Deutsch</option>
       <option value="es">Español</option>
     </select>
-    <button id="themeBtn">Tema</button>
-    <button id="shareBtn">Dela länk</button>
-  </header>
 
-  <!-- Navigeringskontroller -->
-  <div id="controls">
-    <button id="carBtn">🚗</button>
-    <button id="bikeBtn">🚴</button>
-    <button id="walkBtn">🚶</button>
-    <button id="followBtn">Följ</button>
+    <label for="themeSelect">Tema:</label>
+    <select id="themeSelect">
+      <option value="light">Ljust</option>
+      <option value="dark">Mörkt</option>
+    </select>
+
+    <label for="modeSelect">Färdsätt:</label>
+    <select id="modeSelect">
+      <option value="driving">🚗 Bil</option>
+      <option value="cycling">🚴 Cykel</option>
+      <option value="walking">🚶 Gång</option>
+      <option value="transit">🚌 Kollektivtrafik</option>
+    </select>
+    
+    <button id="closeSettings">Stäng</button>
   </div>
 
   <!-- Sidopanel -->
@@ -53,7 +67,7 @@
   </aside>
 
   <footer>
-    Demo: för full funktionalitet behövs API:er (Trafikverket, SL, Mapbox, etc).
+    Demo: för full funktionalitet behövs API:er (Trafikverket, SL, Västtrafik, Mapbox, etc).
   </footer>
 
   <script src="script.js"></script>
