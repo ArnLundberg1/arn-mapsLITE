@@ -1,30 +1,18 @@
-// Ladda konfiguration
 let CONFIG = {};
 fetch("config.cfg")
   .then(r => r.json())
   .then(cfg => { CONFIG = cfg; initMap(); });
 
-let map, routingControl, currentPosMarker, follow = false, mode = "driving";
+let map, routingControl, currentPosMarker;
+let mode = "driving";
+let darkMode = false;
 
-// Initiera Leaflet
+// Initiera kartan
 function initMap() {
   map = L.map('map').setView([59.3293, 18.0686], 13);
 
   const lightTiles = L.tileLayer(CONFIG.tiles.light, { attribution: CONFIG.attribution }).addTo(map);
   const darkTiles = L.tileLayer(CONFIG.tiles.dark, { attribution: CONFIG.attribution });
-
-  // Tema-knapp
-  let darkMode = false;
-  document.getElementById("themeBtn").addEventListener("click", () => {
-    if (darkMode) {
-      map.removeLayer(darkTiles);
-      lightTiles.addTo(map);
-    } else {
-      map.removeLayer(lightTiles);
-      darkTiles.addTo(map);
-    }
-    darkMode = !darkMode;
-  });
 
   // GPS
   if (navigator.geolocation) {
@@ -36,22 +24,35 @@ function initMap() {
       } else {
         currentPosMarker.setLatLng([lat, lng]);
       }
-      if (follow) map.setView([lat, lng], 15);
     });
   }
-
-  // Följ-knapp
-  document.getElementById("followBtn").addEventListener("click", () => follow = !follow);
-
-  // Transport-läge
-  document.getElementById("carBtn").addEventListener("click", () => mode = "driving");
-  document.getElementById("bikeBtn").addEventListener("click", () => mode = "cycling");
-  document.getElementById("walkBtn").addEventListener("click", () => mode = "walking");
 
   // Sök
   document.getElementById("searchBtn").addEventListener("click", () => {
     const q = document.getElementById("searchInput").value;
     searchPlace(q);
+  });
+
+  // Inställningar
+  document.getElementById("settingsBtn").addEventListener("click", () => {
+    document.getElementById("settingsPanel").classList.remove("hidden");
+  });
+  document.getElementById("closeSettings").addEventListener("click", () => {
+    document.getElementById("settingsPanel").classList.add("hidden");
+  });
+
+  document.getElementById("themeSelect").addEventListener("change", e => {
+    if (e.target.value === "dark") {
+      map.removeLayer(lightTiles);
+      darkTiles.addTo(map);
+    } else {
+      map.removeLayer(darkTiles);
+      lightTiles.addTo(map);
+    }
+  });
+
+  document.getElementById("modeSelect").addEventListener("change", e => {
+    mode = e.target.value;
   });
 }
 
@@ -69,13 +70,19 @@ function searchPlace(query) {
     });
 }
 
-// Starta ruttplanering via OSRM
+// Starta rutt
 function startRouting(destLat, destLon) {
   if (routingControl) map.removeControl(routingControl);
-
   if (!currentPosMarker) return;
 
   const [startLat, startLon] = currentPosMarker.getLatLng();
+
+  // Om kollektivtrafik → hämta från API istället för OSRM
+  if (mode === "transit") {
+    document.getElementById("routeInfo").innerHTML = 
+      "Kollektivtrafik kräver API (SL/Västtrafik).";
+    return;
+  }
 
   routingControl = L.Routing.control({
     waypoints: [
@@ -90,18 +97,17 @@ function startRouting(destLat, destLon) {
   }).addTo(map);
 
   routingControl.on('routesfound', e => {
-    const steps = e.routes[0].instructions || [];
     let out = "<ol>";
     e.routes[0].instructions.forEach(s => {
       out += `<li>${s.text}</li>`;
-      speak(s.text); // TTS
+      speak(s.text);
     });
     out += "</ol>";
     document.getElementById("routeInfo").innerHTML = out;
   });
 }
 
-// TTS
+// Text-to-speech
 function speak(text) {
   if ('speechSynthesis' in window) {
     const msg = new SpeechSynthesisUtterance(text);
