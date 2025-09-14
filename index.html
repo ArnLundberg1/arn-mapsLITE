@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Navigeringshemsida</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+<header>
+<h1>Navigering — GitHub Pages Demo</h1>
+<div id="controls">
+<select id="langSelect">
+<option value="sv">Svenska</option>
+<option value="en">English</option>
+<option value="de">Deutsch</option>
+<option value="es">Español</option>
+</select>
+<button id="themeBtn">Tema</button>
+<button id="shareBtn">Dela länk</button>
+</div>
+</header>
+
+
+<main>
+<div id="searchPanel">
+<input type="text" id="searchInput" placeholder="Sök plats eller adress...">
+<button id="searchBtn">Sök</button>
+<div id="transportBtns">
+<button data-mode="driving">🚗</button>
+<button data-mode="cycling">🚴</button>
+<button data-mode="walking">🚶</button>
+<button id="followBtn">Följ</button>
+</div>
+<div id="searchResults"></div>
+<div id="recentSearches"></div>
+</div>
+
+
+<div id="favoritesPanel">
+<h3>Favoriter</h3>
+<div id="favorites"></div>
+<button id="saveFavBtn">Spara aktuell plats</button>
+</div>
+
+
+<div id="routePanel">
+<h3>Rutt</h3>
+<div id="routeSteps"></div>
+</div>
+
+
+<div id="map"></div>
+</main>
+
+
+<footer>
+Demo: för full funktionalitet behövs API:er (Trafikverket, SL, Mapbox, etc).
+</footer>
+
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
