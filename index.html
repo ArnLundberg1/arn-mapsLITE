@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Navigeringshemsida</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body>
+  <header>
+    <h1>🚗 Navigeringsapp</h1>
+    <nav>
+      <button onclick="toggleTheme()">🌓 Tema</button>
+      <button onclick="toggleFollow()">📍 Följ mig</button>
+      <button onclick="saveFavorite()">⭐ Spara plats</button>
+      <button onclick="loadTrafficEvents()">🚧 Trafik</button>
+      <button onclick="loadChargingStations(59.3293,18.0686)">⚡ Laddstationer</button>
+      <button onclick="toggleSettings()">⚙️ Inställningar</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Kartan -->
+    <div id="map"></div>
+
+    <!-- Sidopanel med sök + färdbeskrivningar -->
+    <aside id="sidebar">
+      <input type="text" id="searchInput" placeholder="Sök plats, adress..." />
+      <button id="searchBtn">🔍 Sök</button>
+
+      <section id="directions">
+        <h3>Färdbeskrivning</h3>
+        <p>Ingen rutt aktiv.</p>
+      </section>
+    </aside>
+
+    <!-- Små paneler i nedre hörnet -->
+    <div id="bottom-panels">
+      <section id="recent">
+        <h3>Senaste sökningar</h3>
+        <ul id="recentList"></ul>
+      </section>
+
+      <section id="favorites">
+        <h3>Favoriter</h3>
+        <ul id="favoriteList"></ul>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <p>Demo-version • API-data från OSM, OSRM, Trafikverket, SL m.fl.</p>
+  </footer>
+
+  <!-- Inställningspanel (modal) -->
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close" onclick="toggleSettings()">&times;</span>
+      <h2>⚙️ Inställningar</h2>
+
+      <label for="languageSelect">Språk:</label>
+      <select id="languageSelect" onchange="setLanguage(this.value)">
+        <option value="sv">Svenska</option>
+        <option value="en">English</option>
+        <option value="de">Deutsch</option>
+        <option value="es">Español</option>
+      </select>
+
+      <label for="transportSelect">Färdsätt:</label>
+      <select id="transportSelect" onchange="setTransport(this.value)">
+        <option value="driving">🚗 Bil</option>
+        <option value="bike">🚴 Cykel</option>
+        <option value="walk">🚶 Gång</option>
+        <option value="transit">🚌 Kollektivtrafik</option>
+      </select>
+
+      <button onclick="toggleTheme()">🌓 Växla tema</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
