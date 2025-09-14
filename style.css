@@ -1,0 +1,181 @@
+/* Reset */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, Arial, sans-serif;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: #2c3e50;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 15px;
+  z-index: 1000;
+}
+
+header h1 {
+  font-size: 1.2em;
+  margin: 0;
+}
+
+header nav button {
+  margin-left: 5px;
+  padding: 5px 8px;
+  border: none;
+  border-radius: 6px;
+  background: #34495e;
+  color: #fff;
+  cursor: pointer;
+}
+
+header nav button:hover {
+  background: #1abc9c;
+}
+
+/* Kartan */
+#map {
+  height: 100vh;
+  width: 100%;
+}
+
+/* Sidopanel */
+#sidebar {
+  position: absolute;
+  top: 70px;
+  left: 10px;
+  width: 280px;
+  max-height: 60vh;
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px;
+  overflow-y: auto;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  z-index: 900;
+}
+
+#sidebar input {
+  width: calc(100% - 60px);
+  padding: 6px;
+  margin-bottom: 5px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+#sidebar button {
+  padding: 6px 10px;
+  margin-left: 5px;
+  border: none;
+  border-radius: 6px;
+  background: #3498db;
+  color: #fff;
+  cursor: pointer;
+}
+
+#sidebar button:hover {
+  background: #2980b9;
+}
+
+/* Färdbeskrivningar */
+#directions {
+  margin-top: 10px;
+  font-size: 0.9em;
+}
+
+#directions h3 {
+  margin: 5px 0;
+}
+
+/* Bottenpaneler */
+#bottom-panels {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  display: flex;
+  gap: 10px;
+  z-index: 950;
+}
+
+#favorites, #recent {
+  width: 140px;
+  height: 150px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 5px;
+  font-size: 0.85em;
+  overflow-y: auto;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+#favorites h3, #recent h3 {
+  font-size: 0.9em;
+  margin-top: 0;
+}
+
+/* Footer */
+footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 25px;
+  font-size: 0.8em;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  text-align: center;
+  line-height: 25px;
+  z-index: 1000;
+}
+
+/* Inställningsmodal */
+.modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 2000;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  width: 300px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.modal-content h2 {
+  margin-top: 0;
+}
+
+.modal-content select, .modal-content button {
+  display: block;
+  margin: 10px 0;
+  padding: 6px;
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1em;
+}
+
+.close {
+  float: right;
+  font-size: 1.5em;
+  cursor: pointer;
+}
