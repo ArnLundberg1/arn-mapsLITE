@@ -1,64 +1,61 @@
 <!DOCTYPE html>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Navigeringshemsida</title>
-<link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Navigering — GitHub Pages Demo</title>
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Leaflet Routing -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css"/>
+  <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+
 </head>
 <body>
-<header>
-<h1>Navigering — GitHub Pages Demo</h1>
-<div id="controls">
-<select id="langSelect">
-<option value="sv">Svenska</option>
-<option value="en">English</option>
-<option value="de">Deutsch</option>
-<option value="es">Español</option>
-</select>
-<button id="themeBtn">Tema</button>
-<button id="shareBtn">Dela länk</button>
-</div>
-</header>
+  <div id="map"></div>
 
+  <!-- Toppmeny -->
+  <header>
+    <input type="text" id="searchInput" placeholder="Sök plats eller adress…">
+    <button id="searchBtn">Sök</button>
+    <select id="langSelect">
+      <option value="sv">Svenska</option>
+      <option value="en">English</option>
+      <option value="de">Deutsch</option>
+      <option value="es">Español</option>
+    </select>
+    <button id="themeBtn">Tema</button>
+    <button id="shareBtn">Dela länk</button>
+  </header>
 
-<main>
-<div id="searchPanel">
-<input type="text" id="searchInput" placeholder="Sök plats eller adress...">
-<button id="searchBtn">Sök</button>
-<div id="transportBtns">
-<button data-mode="driving">🚗</button>
-<button data-mode="cycling">🚴</button>
-<button data-mode="walking">🚶</button>
-<button id="followBtn">Följ</button>
-</div>
-<div id="searchResults"></div>
-<div id="recentSearches"></div>
-</div>
+  <!-- Navigeringskontroller -->
+  <div id="controls">
+    <button id="carBtn">🚗</button>
+    <button id="bikeBtn">🚴</button>
+    <button id="walkBtn">🚶</button>
+    <button id="followBtn">Följ</button>
+  </div>
 
+  <!-- Sidopanel -->
+  <aside id="sidebar">
+    <h3>Favoriter</h3>
+    <button id="saveFav">Spara aktuell plats</button>
+    <ul id="favList"></ul>
 
-<div id="favoritesPanel">
-<h3>Favoriter</h3>
-<div id="favorites"></div>
-<button id="saveFavBtn">Spara aktuell plats</button>
-</div>
+    <h3>Senaste sökningar</h3>
+    <ul id="recentList"></ul>
 
+    <h3>Rutt</h3>
+    <div id="routeInfo"></div>
+  </aside>
 
-<div id="routePanel">
-<h3>Rutt</h3>
-<div id="routeSteps"></div>
-</div>
+  <footer>
+    Demo: för full funktionalitet behövs API:er (Trafikverket, SL, Mapbox, etc).
+  </footer>
 
-
-<div id="map"></div>
-</main>
-
-
-<footer>
-Demo: för full funktionalitet behövs API:er (Trafikverket, SL, Mapbox, etc).
-</footer>
-
-
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
