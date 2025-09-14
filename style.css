@@ -1,0 +1,33 @@
+body {
+margin: 0;
+font-family: sans-serif;
+display: flex;
+flex-direction: column;
+height: 100vh;
+}
+header, footer {
+padding: 10px;
+background: #f8f8f8;
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+main {
+flex: 1;
+position: relative;
+}
+#map {
+height: 100%;
+width: 100%;
+}
+#searchPanel, #favoritesPanel, #routePanel {
+position: absolute;
+background: rgba(255,255,255,0.9);
+padding: 10px;
+border-radius: 6px;
+overflow: auto;
+}
+#searchPanel { top: 10px; left: 10px; width: 250px; }
+#favoritesPanel { top: 10px; right: 10px; width: 200px; }
+#routePanel { bottom: 10px; left: 10px; width: 300px; max-height: 200px; }
+```
