@@ -1,62 +1,130 @@
-/* style.css — modern, clean UI inspired by Google Maps */
-:root{
-  --accent: #1e88e5;
-  --bg: #ffffff;
-  --panel-bg: rgba(255,255,255,0.95);
-  --muted: #6b7280;
-  --shadow: 0 6px 18px rgba(0,0,0,0.12);
+/* Grundstil */
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Arial, sans-serif;
 }
 
-/* Reset */
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:#111}
-#map{position:absolute;inset:0;z-index:1}
-
-/* Topbar */
-#topbar{
-  position:absolute;top:0;left:0;right:0;height:56px;background:#0f1724;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 12px;z-index:1200;
-  box-shadow:var(--shadow)
+/* KARTA */
+#map {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
-#topbar .brand{font-weight:600}
-.top-actions button{margin-left:8px;padding:6px 10px;border-radius:8px;border:none;background:rgba(255,255,255,0.06);color:#fff;cursor:pointer}
 
-/* UI Top search */
-#uiTop{position:absolute;top:66px;left:50%;transform:translateX(-50%);display:flex;gap:8px;align-items:center;padding:10px;border-radius:10px;background:var(--panel-bg);z-index:1100;box-shadow:var(--shadow)}
-#uiTop input{width:420px;padding:10px;border-radius:8px;border:1px solid #e6e6e6}
-#uiTop button{padding:10px 12px;border-radius:8px;border:none;background:var(--accent);color:#fff;cursor:pointer}
-#transportButtons{display:flex;gap:6px}
-.mode{padding:8px 10px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);background:#fff;cursor:pointer}
-.mode.active{background:var(--accent);color:#fff}
+/* SÖKFÄLT */
+#searchBar {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  z-index: 1000;
+}
+#searchBar input {
+  border: none;
+  outline: none;
+  padding: 6px;
+  width: 220px;
+  font-size: 14px;
+}
+#searchBar button {
+  border: none;
+  background: #4285f4;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
 
-/* Sidebar (right) */
-#sidebar{position:absolute;top:66px;right:10px;width:340px;max-height:70vh;background:var(--panel-bg);padding:12px;border-radius:10px;z-index:1100;box-shadow:var(--shadow);overflow:auto}
-#sidebar h3{margin:0 0 8px 0}
-#directionsList{font-size:0.95em;color:#111}
-#turnControls{margin-top:10px;display:flex;gap:8px}
+/* DIRECTIONS */
+#directions {
+  position: absolute;
+  bottom: 120px;
+  left: 15px;
+  right: 15px;
+  max-height: 200px;
+  overflow-y: auto;
+  background: #fff;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  z-index: 900;
+}
 
-/* Bottom-left mini panels */
-#bottomLeft{position:absolute;left:12px;bottom:12px;display:flex;flex-direction:column;gap:10px;z-index:1100}
-.miniPanel{width:200px;background:var(--panel-bg);padding:8px;border-radius:10px;box-shadow:var(--shadow);font-size:0.9em}
-.miniPanel h4{margin:0 0 6px 0}
-.miniPanel ul{max-height:90px;overflow:auto;padding-left:16px;margin:4px 0}
+/* FAVORITER */
+#favorites {
+  position: absolute;
+  bottom: 60px;
+  left: 15px;
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  font-size: 14px;
+  width: 150px;
+  z-index: 800;
+}
+#favorites ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
 
-/* Floating actions (bottom right) */
-#floatingActions{position:absolute;right:12px;bottom:12px;display:flex;flex-direction:column;gap:8px;z-index:1100}
-#floatingActions button{width:56px;height:56px;border-radius:50%;border:none;background:#fff;box-shadow:var(--shadow);cursor:pointer;font-size:18px}
+/* SENASTE SÖKNINGAR */
+#recentSearches {
+  position: absolute;
+  bottom: 60px;
+  right: 15px;
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  font-size: 14px;
+  width: 150px;
+  z-index: 800;
+}
+#recentSearches ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
 
-/* Modal settings */
-.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);z-index:1300}
-.modal.hidden{display:none}
-.modalContent{background:#fff;padding:18px;border-radius:12px;width:320px;box-shadow:var(--shadow)}
-.modalContent label{display:block;margin-top:12px;font-weight:600}
-.modalContent select, .modalContent input{width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;margin-top:6px}
+/* INSTÄLLNINGAR */
+#settingsPanel {
+  position: absolute;
+  top: 70px;
+  right: 15px;
+  background: #fff;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  width: 200px;
+  font-size: 14px;
+  z-index: 1100;
+}
+#settingsPanel.hidden {
+  display: none;
+}
 
-/* Toast */
-#toast{position:absolute;left:50%;transform:translateX(-50%);bottom:90px;background:#111;color:#fff;padding:8px 14px;border-radius:8px;z-index:1400;box-shadow:var(--shadow)}
-.hidden{display:none}
-
-/* small responsive tweaks */
-@media(max-width:800px){
-  #uiTop input{width:220px}
-  #sidebar{width:90vw;right:5vw}
+/* INSTÄLLNINGAR KNAPP */
+#settingsBtn {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  border: none;
+  background: #4285f4;
+  color: white;
+  font-size: 18px;
+  padding: 12px;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  cursor: pointer;
+  z-index: 1200;
 }
