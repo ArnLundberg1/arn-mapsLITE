@@ -55,7 +55,6 @@ function searchPlace(query) {
 
 // ======================= DESTINATION MARKER =======================
 function addDestinationMarker(lat, lon, name) {
-  // Ta bort gammal destination om den finns
   if (destinationMarker) {
     map.removeLayer(destinationMarker);
   }
@@ -68,7 +67,6 @@ function addDestinationMarker(lat, lon, name) {
   `);
   destinationMarker.openPopup();
 
-  // När popup stängs manuellt → rensa rutt
   destinationMarker.on("popupclose", () => {
     clearRoute();
   });
@@ -90,7 +88,6 @@ function startRoute(destLat, destLon) {
       if (data.routes && data.routes.length > 0) {
         const route = data.routes[0];
 
-        // Rensa gammal rutt
         if (routeLayer) {
           map.removeLayer(routeLayer);
         }
@@ -100,7 +97,6 @@ function startRoute(destLat, destLon) {
         }).addTo(map);
         map.fitBounds(routeLayer.getBounds());
 
-        // Visa färdbeskrivning
         showDirections(route.legs[0].steps);
       }
     });
@@ -118,12 +114,10 @@ function showDirections(steps) {
     dirList.appendChild(li);
   });
 
-  // Avslut på rutten
   const done = document.createElement("p");
   done.innerHTML = "<b>Du har nått ditt mål.</b>";
   dirBox.appendChild(done);
 
-  // Rensa rutt & destination efter mål
   setTimeout(clearRoute, 5000);
 }
 
@@ -178,7 +172,7 @@ function loadTrafficIncidents() {
     .catch(err => console.error("Trafikverket error:", err));
 }
 
-// ======================= VÄDER (SMHI / OpenWeather) =======================
+// ======================= VÄDER (SMHI/OpenWeather) =======================
 function loadWeatherAlerts() {
   if (!CONFIG.weather.apiUrl) return;
 
@@ -236,7 +230,6 @@ function loadParking() {
 // ======================= KOLLEKTIVTRAFIK (placeholder) =======================
 function loadPublicTransport() {
   if (!CONFIG.publicTransport.sl.apiKey) return;
-  // Här kan du bygga anrop mot SL/Västtrafik beroende på API
   console.log("Kollektivtrafik API integration kräver extra implementation.");
 }
 
@@ -244,13 +237,11 @@ function loadPublicTransport() {
 document.addEventListener("DOMContentLoaded", () => {
   initMap();
 
-  // Sök-knappen
   document.getElementById("searchBtn").addEventListener("click", () => {
     const q = document.getElementById("searchInput").value;
     if (q) searchPlace(q);
   });
 
-  // Enter i sökrutan
   document.getElementById("searchInput").addEventListener("keypress", (e) => {
     if (e.key === "Enter") {
       const q = document.getElementById("searchInput").value;
