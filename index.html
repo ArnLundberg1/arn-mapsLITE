@@ -1,85 +1,144 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="sv">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Navigeringshemsida</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Navigeringsapp — GitHub Pages Demo</title>
+
+  <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Leaflet Routing Machine -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+  <!-- Optional icons -->
+  <script src="https://unpkg.com/leaflet-awesome-markers"></script>
 </head>
 <body>
-  <header>
-    <h1>🚗 Navigeringsapp</h1>
-    <nav>
-      <button onclick="toggleTheme()">🌓 Tema</button>
-      <button onclick="toggleFollow()">📍 Följ mig</button>
-      <button onclick="saveFavorite()">⭐ Spara plats</button>
-      <button onclick="loadTrafficEvents()">🚧 Trafik</button>
-      <button onclick="loadChargingStations(59.3293,18.0686)">⚡ Laddstationer</button>
-      <button onclick="toggleSettings()">⚙️ Inställningar</button>
-    </nav>
+  <header id="topbar">
+    <div class="brand">🗺️ Navigera</div>
+    <div class="top-actions">
+      <button id="btnSettings">⚙️ Inställningar</button>
+      <button id="btnShare">🔗 Dela</button>
+    </div>
   </header>
 
-  <main>
-    <!-- Kartan -->
-    <div id="map"></div>
+  <!-- Map -->
+  <div id="map"></div>
 
-    <!-- Sidopanel med sök + färdbeskrivningar -->
-    <aside id="sidebar">
-      <input type="text" id="searchInput" placeholder="Sök plats, adress..." />
-      <button id="searchBtn">🔍 Sök</button>
-
-      <section id="directions">
-        <h3>Färdbeskrivning</h3>
-        <p>Ingen rutt aktiv.</p>
-      </section>
-    </aside>
-
-    <!-- Små paneler i nedre hörnet -->
-    <div id="bottom-panels">
-      <section id="recent">
-        <h3>Senaste sökningar</h3>
-        <ul id="recentList"></ul>
-      </section>
-
-      <section id="favorites">
-        <h3>Favoriter</h3>
-        <ul id="favoriteList"></ul>
-      </section>
+  <!-- Overlay UI (Search + mini controls) -->
+  <div id="uiTop">
+    <input id="searchInput" placeholder="Sök plats, adress eller POI..." autocomplete="off"/>
+    <button id="searchBtn">Sök</button>
+    <div id="transportButtons">
+      <button data-mode="driving" class="mode active">🚗</button>
+      <button data-mode="cycling" class="mode">🚴</button>
+      <button data-mode="walking" class="mode">🚶</button>
+      <button data-mode="transit" class="mode">🚌</button>
     </div>
-  </main>
+  </div>
 
-  <footer>
-    <p>Demo-version • API-data från OSM, OSRM, Trafikverket, SL m.fl.</p>
-  </footer>
+  <!-- Right side panel: Directions -->
+  <aside id="sidebar">
+    <section id="directions">
+      <h3>Färdbeskrivning</h3>
+      <div id="directionsList">Ingen rutt aktiv.</div>
+      <div id="turnControls" class="hidden">
+        <button id="btnPrevStep">◀️ Föregående</button>
+        <button id="btnNextStep">Nästa ▶️</button>
+        <button id="btnCancelRoute">❌ Avbryt rutt</button>
+      </div>
+    </section>
+  </aside>
 
-  <!-- Inställningspanel (modal) -->
-  <div id="settingsModal" class="modal hidden">
-    <div class="modal-content">
-      <span class="close" onclick="toggleSettings()">&times;</span>
-      <h2>⚙️ Inställningar</h2>
+  <!-- Bottom-left mini panels: recent + favorites -->
+  <div id="bottomLeft">
+    <div id="recent" class="miniPanel">
+      <h4>Senaste sökningar</h4>
+      <ul id="recentList"></ul>
+    </div>
+    <div id="favorites" class="miniPanel">
+      <h4>Favoriter</h4>
+      <ul id="favList"></ul>
+      <div class="favActions">
+        <button id="saveHome">Spara Hem</button>
+        <button id="saveWork">Spara Jobb</button>
+      </div>
+    </div>
+  </div>
 
-      <label for="languageSelect">Språk:</label>
-      <select id="languageSelect" onchange="setLanguage(this.value)">
+  <!-- Floating actions (bottom-right like Google Maps) -->
+  <div id="floatingActions">
+    <button id="btnLocate">📍</button>
+    <button id="btnMeasure">📏 Mät</button>
+    <button id="btnReport">⚠️ Rapportera</button>
+  </div>
+
+  <!-- Settings modal -->
+  <div id="settingsModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modalContent">
+      <button class="closeModal" id="closeSettings">&times;</button>
+      <h2>Inställningar</h2>
+
+      <label>Språk</label>
+      <select id="settingLanguage">
         <option value="sv">Svenska</option>
         <option value="en">English</option>
         <option value="de">Deutsch</option>
         <option value="es">Español</option>
       </select>
 
-      <label for="transportSelect">Färdsätt:</label>
-      <select id="transportSelect" onchange="setTransport(this.value)">
-        <option value="driving">🚗 Bil</option>
-        <option value="bike">🚴 Cykel</option>
-        <option value="walk">🚶 Gång</option>
-        <option value="transit">🚌 Kollektivtrafik</option>
+      <label>Tema</label>
+      <select id="settingTheme">
+        <option value="light">Ljust</option>
+        <option value="dark">Mörkt</option>
       </select>
 
-      <button onclick="toggleTheme()">🌓 Växla tema</button>
+      <label>UI placering</label>
+      <select id="settingUiPos">
+        <option value="top">UI upptill</option>
+        <option value="bottom">UI längst ner</option>
+      </select>
+
+      <label>Toggle-lager (i inställningar)</label>
+      <div class="toggles">
+        <label><input type="checkbox" id="toggleTraffic" checked/> Trafik</label>
+        <label><input type="checkbox" id="toggleWeather" checked/> Vädervarningar</label>
+        <label><input type="checkbox" id="togglePOI" checked/> POI (parkering, ladd)</label>
+        <label><input type="checkbox" id="toggleAutoReroute" /> Automatisk omläggning</label>
+        <label><input type="checkbox" id="toggleRecenter" /> Toggle Återpositionering</label>
+      </div>
+
+      <div class="modalActions">
+        <button id="saveSettingsBtn">Spara</button>
+      </div>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <!-- Small notification area -->
+  <div id="toast" class="hidden"></div>
+
+  <!-- Config load and app script -->
+  <script>
+    // Load config.cfg (JSON file) and then load script.js
+    fetch("config.cfg").then(r=>r.json()).then(cfg=>{
+      window.APP_CONFIG = cfg;
+      const s = document.createElement("script");
+      s.src = "script.js";
+      document.body.appendChild(s);
+    }).catch(err=>{
+      console.error("Kunde inte läsa config.cfg:", err);
+      // still load script.js with empty CONFIG (it will use defaults)
+      window.APP_CONFIG = {};
+      const s = document.createElement("script");
+      s.src = "script.js";
+      document.body.appendChild(s);
+    });
+  </script>
 </body>
 </html>
