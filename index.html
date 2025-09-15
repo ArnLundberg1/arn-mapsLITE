@@ -1,144 +1,93 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="sv">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Navigeringsapp — GitHub Pages Demo</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Navigeringskarta</title>
 
-  <!-- Styles -->
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"
+  />
+
+  <!-- Egna stilar -->
   <link rel="stylesheet" href="style.css" />
-
-  <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <!-- Leaflet Routing Machine -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-
-  <!-- Optional icons -->
-  <script src="https://unpkg.com/leaflet-awesome-markers"></script>
 </head>
 <body>
-  <header id="topbar">
-    <div class="brand">🗺️ Navigera</div>
-    <div class="top-actions">
-      <button id="btnSettings">⚙️ Inställningar</button>
-      <button id="btnShare">🔗 Dela</button>
-    </div>
-  </header>
-
-  <!-- Map -->
+  <!-- KARTAN -->
   <div id="map"></div>
 
-  <!-- Overlay UI (Search + mini controls) -->
-  <div id="uiTop">
-    <input id="searchInput" placeholder="Sök plats, adress eller POI..." autocomplete="off"/>
-    <button id="searchBtn">Sök</button>
-    <div id="transportButtons">
-      <button data-mode="driving" class="mode active">🚗</button>
-      <button data-mode="cycling" class="mode">🚴</button>
-      <button data-mode="walking" class="mode">🚶</button>
-      <button data-mode="transit" class="mode">🚌</button>
-    </div>
+  <!-- SÖKFÄLT -->
+  <div id="searchBar">
+    <input type="text" id="searchInput" placeholder="Sök plats, adress eller POI..." />
+    <button id="searchBtn">🔍</button>
   </div>
 
-  <!-- Right side panel: Directions -->
-  <aside id="sidebar">
-    <section id="directions">
-      <h3>Färdbeskrivning</h3>
-      <div id="directionsList">Ingen rutt aktiv.</div>
-      <div id="turnControls" class="hidden">
-        <button id="btnPrevStep">◀️ Föregående</button>
-        <button id="btnNextStep">Nästa ▶️</button>
-        <button id="btnCancelRoute">❌ Avbryt rutt</button>
-      </div>
-    </section>
-  </aside>
-
-  <!-- Bottom-left mini panels: recent + favorites -->
-  <div id="bottomLeft">
-    <div id="recent" class="miniPanel">
-      <h4>Senaste sökningar</h4>
-      <ul id="recentList"></ul>
-    </div>
-    <div id="favorites" class="miniPanel">
-      <h4>Favoriter</h4>
-      <ul id="favList"></ul>
-      <div class="favActions">
-        <button id="saveHome">Spara Hem</button>
-        <button id="saveWork">Spara Jobb</button>
-      </div>
-    </div>
+  <!-- DIRECTIONS (vägbeskrivning) -->
+  <div id="directions">
+    <h3>Färdbeskrivning</h3>
+    <p>Ingen rutt aktiv.</p>
   </div>
 
-  <!-- Floating actions (bottom-right like Google Maps) -->
-  <div id="floatingActions">
-    <button id="btnLocate">📍</button>
-    <button id="btnMeasure">📏 Mät</button>
-    <button id="btnReport">⚠️ Rapportera</button>
+  <!-- FAVORITER -->
+  <div id="favorites">
+    <h3>Favoriter</h3>
+    <ul id="favoritesList">
+      <li>🏠 Hem</li>
+      <li>💼 Jobb</li>
+    </ul>
   </div>
 
-  <!-- Settings modal -->
-  <div id="settingsModal" class="modal hidden" role="dialog" aria-modal="true">
-    <div class="modalContent">
-      <button class="closeModal" id="closeSettings">&times;</button>
-      <h2>Inställningar</h2>
-
-      <label>Språk</label>
-      <select id="settingLanguage">
-        <option value="sv">Svenska</option>
-        <option value="en">English</option>
-        <option value="de">Deutsch</option>
-        <option value="es">Español</option>
-      </select>
-
-      <label>Tema</label>
-      <select id="settingTheme">
-        <option value="light">Ljust</option>
-        <option value="dark">Mörkt</option>
-      </select>
-
-      <label>UI placering</label>
-      <select id="settingUiPos">
-        <option value="top">UI upptill</option>
-        <option value="bottom">UI längst ner</option>
-      </select>
-
-      <label>Toggle-lager (i inställningar)</label>
-      <div class="toggles">
-        <label><input type="checkbox" id="toggleTraffic" checked/> Trafik</label>
-        <label><input type="checkbox" id="toggleWeather" checked/> Vädervarningar</label>
-        <label><input type="checkbox" id="togglePOI" checked/> POI (parkering, ladd)</label>
-        <label><input type="checkbox" id="toggleAutoReroute" /> Automatisk omläggning</label>
-        <label><input type="checkbox" id="toggleRecenter" /> Toggle Återpositionering</label>
-      </div>
-
-      <div class="modalActions">
-        <button id="saveSettingsBtn">Spara</button>
-      </div>
-    </div>
+  <!-- SENASTE SÖKNINGAR -->
+  <div id="recentSearches">
+    <h3>Senaste sökningar</h3>
+    <ul id="recentList"></ul>
   </div>
 
-  <!-- Small notification area -->
-  <div id="toast" class="hidden"></div>
+  <!-- INSTÄLLNINGAR -->
+  <div id="settingsPanel" class="hidden">
+    <h3>⚙️ Inställningar</h3>
+    <label>
+      <input type="checkbox" id="toggleDarkMode" />
+      Dark Mode
+    </label>
+    <br />
+    <label>
+      <input type="checkbox" id="toggleFollowUser" />
+      Följ läge
+    </label>
+    <br />
+    <label for="languageSelect">Språk:</label>
+    <select id="languageSelect">
+      <option value="sv">🇸🇪 Svenska</option>
+      <option value="en">🇬🇧 English</option>
+      <option value="de">🇩🇪 Deutsch</option>
+      <option value="es">🇪🇸 Español</option>
+    </select>
+    <br />
+    <label for="modeSelect">Färdsätt:</label>
+    <select id="modeSelect">
+      <option value="driving">🚗 Bil</option>
+      <option value="cycling">🚴 Cykel</option>
+      <option value="walking">🚶 Gång</option>
+      <option value="transit">🚌 Kollektivtrafik</option>
+    </select>
+    <br />
+    <label>
+      <input type="checkbox" id="uiPositionToggle" />
+      UI längst ner
+    </label>
+  </div>
 
-  <!-- Config load and app script -->
-  <script>
-    // Load config.cfg (JSON file) and then load script.js
-    fetch("config.cfg").then(r=>r.json()).then(cfg=>{
-      window.APP_CONFIG = cfg;
-      const s = document.createElement("script");
-      s.src = "script.js";
-      document.body.appendChild(s);
-    }).catch(err=>{
-      console.error("Kunde inte läsa config.cfg:", err);
-      // still load script.js with empty CONFIG (it will use defaults)
-      window.APP_CONFIG = {};
-      const s = document.createElement("script");
-      s.src = "script.js";
-      document.body.appendChild(s);
-    });
-  </script>
+  <!-- KNAPP FÖR ATT VISA INSTÄLLNINGAR -->
+  <button id="settingsBtn">⚙️</button>
+
+  <!-- LEAFLET JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <!-- EGENA SCRIPT -->
+  <script src="config.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
