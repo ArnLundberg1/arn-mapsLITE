@@ -2,38 +2,33 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Navigeringskarta</title>
-
-  <!-- Leaflet CSS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet/dist/leaflet.css"
-  />
-
-  <!-- Egna stilar -->
-  <link rel="stylesheet" href="style.css" />
+  <title>Navigator</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 <body>
-  <!-- KARTAN -->
+  <!-- KARTA -->
   <div id="map"></div>
 
-  <!-- SÖKFÄLT -->
+  <!-- SÖKBAR -->
   <div id="searchBar">
-    <input type="text" id="searchInput" placeholder="Sök plats, adress eller POI..." />
+    <input type="text" id="searchInput" placeholder="Sök plats eller adress..." />
     <button id="searchBtn">🔍</button>
   </div>
 
-  <!-- DIRECTIONS (vägbeskrivning) -->
+  <!-- DIRECTIONS -->
   <div id="directions">
-    <h3>Färdbeskrivning</h3>
-    <p>Ingen rutt aktiv.</p>
+    <h3>Färdbeskrivningar</h3>
+    <ul id="directionsList">
+      <li>Exempel: Starta en rutt för att se vägbeskrivning...</li>
+    </ul>
   </div>
 
   <!-- FAVORITER -->
   <div id="favorites">
-    <h3>Favoriter</h3>
-    <ul id="favoritesList">
+    <h4>Favoriter</h4>
+    <ul>
       <li>🏠 Hem</li>
       <li>💼 Jobb</li>
     </ul>
@@ -41,31 +36,25 @@
 
   <!-- SENASTE SÖKNINGAR -->
   <div id="recentSearches">
-    <h3>Senaste sökningar</h3>
-    <ul id="recentList"></ul>
+    <h4>Senaste sökningar</h4>
+    <ul>
+      <li>Kungsträdgården</li>
+      <li>Stockholm Central</li>
+    </ul>
   </div>
 
   <!-- INSTÄLLNINGAR -->
   <div id="settingsPanel" class="hidden">
-    <h3>⚙️ Inställningar</h3>
-    <label>
-      <input type="checkbox" id="toggleDarkMode" />
-      Dark Mode
-    </label>
-    <br />
-    <label>
-      <input type="checkbox" id="toggleFollowUser" />
-      Följ läge
-    </label>
-    <br />
+    <h3>Inställningar</h3>
+    <label><input type="checkbox" id="toggleDarkMode"> Dark Mode</label><br>
+    <label><input type="checkbox" id="toggleFollowUser"> Följ läge</label><br>
     <label for="languageSelect">Språk:</label>
     <select id="languageSelect">
-      <option value="sv">🇸🇪 Svenska</option>
-      <option value="en">🇬🇧 English</option>
-      <option value="de">🇩🇪 Deutsch</option>
-      <option value="es">🇪🇸 Español</option>
-    </select>
-    <br />
+      <option value="sv">Svenska</option>
+      <option value="en">English</option>
+      <option value="de">Deutsch</option>
+      <option value="es">Español</option>
+    </select><br>
     <label for="modeSelect">Färdsätt:</label>
     <select id="modeSelect">
       <option value="driving">🚗 Bil</option>
@@ -73,20 +62,11 @@
       <option value="walking">🚶 Gång</option>
       <option value="transit">🚌 Kollektivtrafik</option>
     </select>
-    <br />
-    <label>
-      <input type="checkbox" id="uiPositionToggle" />
-      UI längst ner
-    </label>
   </div>
 
-  <!-- KNAPP FÖR ATT VISA INSTÄLLNINGAR -->
+  <!-- INSTÄLLNINGAR KNAPP -->
   <button id="settingsBtn">⚙️</button>
 
-  <!-- LEAFLET JS -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-  <!-- EGENA SCRIPT -->
   <script src="config.js"></script>
   <script src="script.js"></script>
 </body>
