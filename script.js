@@ -1,143 +1,260 @@
-/* ---------- script.js med API-integration ---------- */
+// Globala variabler
+let map;
+let userMarker;
+let routeLayer;
+let destinationMarker;
 
-// Ladda config (hämtas från config.cfg via fetch)
-let CONFIG = {};
-fetch("config.cfg")
-  .then(r => r.text())
-  .then(text => {
-    CONFIG = parseConfig(text);
-    initMap();
-  });
-
-function parseConfig(text) {
-  const lines = text.split("\n");
-  const cfg = {};
-  lines.forEach(line => {
-    if (line.includes("=")) {
-      const [key, val] = line.split("=");
-      cfg[key.trim()] = val.trim();
-    }
-  });
-  return cfg;
-}
-
-/* -------- Karta och standard -------- */
-let map, lightTiles, darkTiles, userMarker, followMode = false, routeLayer = null;
+// ======================= INIT KARTA =======================
 function initMap() {
-  map = L.map('map').setView([59.3293, 18.0686], 13);
+  map = L.map("map").setView([59.3293, 18.0686], 13); // default Stockholm
 
-  lightTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19, attribution: '&copy; OpenStreetMap'
+  L.tileLayer(CONFIG.map.tileUrl, {
+    attribution: CONFIG.map.attribution,
+    subdomains: "abc",
+    maxZoom: 20
   }).addTo(map);
 
-  darkTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19, attribution: '&copy; OpenStreetMap & Carto'
-  });
-}
+  // Hämta användarens position
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
 
-/* -------- GPS -------- */
-navigator.geolocation.watchPosition(pos => {
-  const lat = pos.coords.latitude;
-  const lng = pos.coords.longitude;
-  if (!userMarker) {
-    userMarker = L.marker([lat, lng]).addTo(map).bindPopup("Du är här");
-    map.setView([lat, lng], 15);
-  } else {
-    userMarker.setLatLng([lat, lng]);
-    if (followMode) map.setView([lat, lng], map.getZoom());
-  }
-});
-
-/* -------- Routing (bil, cykel, gång) -------- */
-function startRouting(destLat, destLon) {
-  if (!userMarker) { alert("Din position hittas inte ännu."); return; }
-  const start = userMarker.getLatLng();
-  const mode = localStorage.getItem("transport") || "driving";
-  let profile = "driving";
-  if (mode === "bike") profile = "cycling";
-  if (mode === "walk") profile = "walking";
-  if (mode === "transit") return startTransitRouting(start, destLat, destLon);
-
-  const url = `${CONFIG.osrm}/${profile}/v1/${start.lng},${start.lat};${destLon},${destLat}?overview=full&geometries=geojson&steps=true`;
-
-  fetch(url).then(r => r.json()).then(data => {
-    if (routeLayer) map.removeLayer(routeLayer);
-    const route = data.routes[0];
-    routeLayer = L.geoJSON(route.geometry).addTo(map);
-    map.fitBounds(routeLayer.getBounds());
-  });
-}
-
-/* -------- Kollektivtrafik (SL API) -------- */
-function startTransitRouting(start, destLat, destLon) {
-  const url = `${CONFIG.sl_url}?key=${CONFIG.sl_key}&originCoordLat=${start.lat}&originCoordLong=${start.lng}&destCoordLat=${destLat}&destCoordLong=${destLon}`;
-  fetch(url).then(r => r.json()).then(data => {
-    console.log("SL data:", data);
-    alert("Kollektivtrafikrutter hämtade (visa i UI senare).");
-  });
-}
-
-/* -------- Trafikverket (olyckor, köer, vägarbeten) -------- */
-function loadTrafficEvents() {
-  const query = `
-    <REQUEST>
-      <LOGIN authenticationkey='${CONFIG.trafikverket_key}' />
-      <QUERY objecttype='Situation'>
-        <FILTER><EQ name='Deviation.IconId' value='1'/></FILTER>
-      </QUERY>
-    </REQUEST>`;
-
-  fetch(CONFIG.trafikverket_url, {
-    method: "POST",
-    headers: { "Content-Type": "application/xml" },
-    body: query
-  }).then(r => r.json()).then(data => {
-    console.log("Trafikverket data:", data);
-    // Exempel: markera händelser på kartan
-    if (data.RESPONSE && data.RESPONSE.RESULT) {
-      const events = data.RESPONSE.RESULT[0].Situation;
-      events.forEach(ev => {
-        if (ev.Deviation && ev.Deviation[0].Location) {
-          const lat = ev.Deviation[0].Location[0].Point[0].LocationCoordinate.Latitude;
-          const lon = ev.Deviation[0].Location[0].Point[0].LocationCoordinate.Longitude;
-          L.marker([lat, lon], { icon: L.icon({ iconUrl: "warning.png", iconSize: [24,24] }) })
-            .addTo(map)
-            .bindPopup(`🚧 ${ev.Message}`);
-        }
-      });
-    }
-  });
-}
-
-/* -------- Laddstationer (OpenChargeMap) -------- */
-function loadChargingStations(lat, lon) {
-  const url = `${CONFIG.openchargemap}?output=json&latitude=${lat}&longitude=${lon}&distance=5`;
-  fetch(url).then(r => r.json()).then(data => {
-    data.forEach(station => {
-      L.marker([station.AddressInfo.Latitude, station.AddressInfo.Longitude])
+      userMarker = L.marker([lat, lon], { draggable: false })
         .addTo(map)
-        .bindPopup(`⚡ ${station.AddressInfo.Title}`);
+        .bindPopup("Du är här")
+        .openPopup();
+
+      map.setView([lat, lon], 14);
     });
-  });
+  }
+
+  // Ladda externa datakällor
+  loadTrafficIncidents();
+  loadWeatherAlerts();
+  loadChargingStations();
+  loadParking();
+  // loadPublicTransport(); // Kräver API-nycklar
 }
 
-/* -------- Sök (Nominatim) -------- */
+// ======================= SÖKNING =======================
 function searchPlace(query) {
   fetch(`${CONFIG.nominatim}?q=${encodeURIComponent(query)}&format=json&limit=1`)
-    .then(r => r.json()).then(data => {
+    .then(r => r.json())
+    .then(data => {
       if (data && data[0]) {
-        const lat = data[0].lat, lon = data[0].lon;
-        const marker = L.marker([lat, lon]).addTo(map);
-        marker.bindPopup(`
-          <b>${data[0].display_name}</b><br>
-          <button onclick="startRouting(${lat}, ${lon})">🚀 Starta rutt</button>
-        `).openPopup();
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        const name = data[0].display_name;
+
+        addDestinationMarker(lat, lon, name);
         map.setView([lat, lon], 14);
       }
     });
 }
 
-document.getElementById("searchBtn").addEventListener("click", () => {
-  const query = document.getElementById("searchInput").value;
-  if (query) searchPlace(query);
+// ======================= DESTINATION MARKER =======================
+function addDestinationMarker(lat, lon, name) {
+  // Ta bort gammal destination om den finns
+  if (destinationMarker) {
+    map.removeLayer(destinationMarker);
+  }
+
+  destinationMarker = L.marker([lat, lon]).addTo(map);
+  destinationMarker.bindPopup(`
+    <b>${name}</b><br>
+    <button onclick="startRoute(${lat}, ${lon})">🚀 Starta rutt</button>
+    <button onclick="clearRoute()">❌ Avbryt</button>
+  `);
+  destinationMarker.openPopup();
+
+  // När popup stängs manuellt → rensa rutt
+  destinationMarker.on("popupclose", () => {
+    clearRoute();
+  });
+}
+
+// ======================= ROUTING =======================
+function startRoute(destLat, destLon) {
+  if (!userMarker) {
+    alert("Ingen startposition hittades!");
+    return;
+  }
+
+  const userPos = userMarker.getLatLng();
+  const url = `${CONFIG.osrm}/route/v1/driving/${userPos.lng},${userPos.lat};${destLon},${destLat}?geometries=geojson&overview=full&steps=true`;
+
+  fetch(url)
+    .then(r => r.json())
+    .then(data => {
+      if (data.routes && data.routes.length > 0) {
+        const route = data.routes[0];
+
+        // Rensa gammal rutt
+        if (routeLayer) {
+          map.removeLayer(routeLayer);
+        }
+
+        routeLayer = L.geoJSON(route.geometry, {
+          style: { color: "blue", weight: 5 }
+        }).addTo(map);
+        map.fitBounds(routeLayer.getBounds());
+
+        // Visa färdbeskrivning
+        showDirections(route.legs[0].steps);
+      }
+    });
+}
+
+// ======================= DIRECTIONS =======================
+function showDirections(steps) {
+  const dirBox = document.getElementById("directions");
+  dirBox.innerHTML = "<h3>Färdbeskrivning</h3><ol id='dirList'></ol>";
+
+  const dirList = document.getElementById("dirList");
+  steps.forEach(step => {
+    const li = document.createElement("li");
+    li.textContent = step.maneuver.instruction;
+    dirList.appendChild(li);
+  });
+
+  // Avslut på rutten
+  const done = document.createElement("p");
+  done.innerHTML = "<b>Du har nått ditt mål.</b>";
+  dirBox.appendChild(done);
+
+  // Rensa rutt & destination efter mål
+  setTimeout(clearRoute, 5000);
+}
+
+// ======================= RENSNING =======================
+function clearRoute() {
+  if (routeLayer) {
+    map.removeLayer(routeLayer);
+    routeLayer = null;
+  }
+  if (destinationMarker) {
+    map.removeLayer(destinationMarker);
+    destinationMarker = null;
+  }
+
+  const dirBox = document.getElementById("directions");
+  dirBox.innerHTML = "<h3>Färdbeskrivning</h3><p>Ingen rutt aktiv.</p>";
+}
+
+// ======================= TRAFIKVERKET =======================
+function loadTrafficIncidents() {
+  if (!CONFIG.trafikverket.apiKey) return;
+
+  fetch(CONFIG.trafikverket.apiUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/xml" },
+    body: `
+      <REQUEST>
+        <LOGIN authenticationkey="${CONFIG.trafikverket.apiKey}" />
+        <QUERY objecttype="Situation" schemaversion="1">
+          <FILTER>
+            <IN name="Deviation.IconId" value="1,2,3,4,5,6,7,8" />
+          </FILTER>
+        </QUERY>
+      </REQUEST>
+    `
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.RESPONSE) return;
+      data.RESPONSE.RESULT[0].Situation.forEach(sit => {
+        if (!sit.Deviation || !sit.Deviation[0].Geometry) return;
+        const coords = sit.Deviation[0].Geometry.WGS84.match(/(\d+\.\d+) (\d+\.\d+)/);
+        if (coords) {
+          const lat = parseFloat(coords[2]);
+          const lon = parseFloat(coords[1]);
+          L.marker([lat, lon], { title: "Trafikstörning" })
+            .addTo(map)
+            .bindPopup(`<b>Trafikstörning</b><br>${sit.Deviation[0].Message}`);
+        }
+      });
+    })
+    .catch(err => console.error("Trafikverket error:", err));
+}
+
+// ======================= VÄDER (SMHI / OpenWeather) =======================
+function loadWeatherAlerts() {
+  if (!CONFIG.weather.apiUrl) return;
+
+  fetch(CONFIG.weather.apiUrl)
+    .then(r => r.json())
+    .then(data => {
+      if (!data || !data.alert) return;
+      data.alert.forEach(alert => {
+        const lat = alert.coordinates[1];
+        const lon = alert.coordinates[0];
+        L.circle([lat, lon], {
+          radius: 2000,
+          color: "orange"
+        }).addTo(map)
+          .bindPopup(`<b>Vädervarning</b><br>${alert.description}`);
+      });
+    })
+    .catch(err => console.error("Weather API error:", err));
+}
+
+// ======================= LADDSTATIONER =======================
+function loadChargingStations() {
+  if (!CONFIG.charging.apiUrl) return;
+
+  fetch(`${CONFIG.charging.apiUrl}?output=json&countrycode=SE&maxresults=20`)
+    .then(r => r.json())
+    .then(data => {
+      data.forEach(station => {
+        if (station.AddressInfo) {
+          L.marker([station.AddressInfo.Latitude, station.AddressInfo.Longitude], { title: "Laddstation" })
+            .addTo(map)
+            .bindPopup(`<b>Laddstation</b><br>${station.AddressInfo.Title}`);
+        }
+      });
+    })
+    .catch(err => console.error("Charging API error:", err));
+}
+
+// ======================= PARKERING =======================
+function loadParking() {
+  if (!CONFIG.parking.apiUrl) return;
+
+  fetch(CONFIG.parking.apiUrl)
+    .then(r => r.json())
+    .then(data => {
+      data.forEach(p => {
+        L.marker([p.lat, p.lon], { title: "Parkering" })
+          .addTo(map)
+          .bindPopup(`<b>Parkering</b><br>${p.name}`);
+      });
+    })
+    .catch(err => console.error("Parking API error:", err));
+}
+
+// ======================= KOLLEKTIVTRAFIK (placeholder) =======================
+function loadPublicTransport() {
+  if (!CONFIG.publicTransport.sl.apiKey) return;
+  // Här kan du bygga anrop mot SL/Västtrafik beroende på API
+  console.log("Kollektivtrafik API integration kräver extra implementation.");
+}
+
+// ======================= EVENT HANDLERS =======================
+document.addEventListener("DOMContentLoaded", () => {
+  initMap();
+
+  // Sök-knappen
+  document.getElementById("searchBtn").addEventListener("click", () => {
+    const q = document.getElementById("searchInput").value;
+    if (q) searchPlace(q);
+  });
+
+  // Enter i sökrutan
+  document.getElementById("searchInput").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      const q = document.getElementById("searchInput").value;
+      if (q) searchPlace(q);
+    }
+  });
 });
