@@ -16,8 +16,8 @@ html, body {
 /* SÖKBAR */
 #searchBar {
   position: absolute;
-  top: 15px;
-  left: 50%;
+  top: 20px;
+  left: 60%;
   transform: translateX(-50%);
   display: flex;
   background: #fff;
