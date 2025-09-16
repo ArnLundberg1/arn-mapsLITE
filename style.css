@@ -1,116 +1,77 @@
-body, html {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  font-family: Arial, sans-serif;
+/* style.css - clean modern layout inspired by Google Maps */
+:root{
+  --accent:#1e88e5;
+  --panel:#ffffff;
+  --muted:#666;
+  --shadow:0 8px 24px rgba(0,0,0,0.14);
+  --glass: rgba(255,255,255,0.9);
 }
 
-#map {
-  width: 100%;
-  height: 100%;
-}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:#111;background:#f6f7f9}
 
-.panel {
-  position: absolute;
-  background: #fff;
-  padding: 8px;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  font-size: 14px;
-  z-index: 900;
+/* Top bar */
+#topbar{
+  position:absolute;top:0;left:0;right:0;height:56px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 12px;z-index:1400;
+  box-shadow:var(--shadow);
 }
+#topbar .brand{font-weight:700}
+.top-actions button{margin-left:8px;padding:6px;border-radius:8px;border:none;background:rgba(255,255,255,0.08);color:#fff;cursor:pointer}
 
-#searchBox {
-  top: 15px;
-  left: 15px;
-  display: flex;
-  gap: 5px;
-}
+/* Map container */
+#map{position:absolute;inset:0;z-index:1}
 
-#directions {
-  bottom: 15px;
-  left: 15px;
-  right: 15px;
-  max-height: 200px;
-  overflow-y: auto;
-}
+/* Center search UI */
+#uiSearch{position:absolute;top:70px;left:50%;transform:translateX(-50%);display:flex;gap:8px;align-items:center;background:var(--glass);padding:10px;border-radius:12px;z-index:1200;box-shadow:var(--shadow)}
+#uiSearch input{width:420px;padding:10px;border-radius:8px;border:1px solid #e6e6e6}
+#uiSearch button{padding:10px 12px;border-radius:8px;border:none;background:var(--accent);color:#fff;cursor:pointer}
 
-#favorites {
-  bottom: 230px;
-  left: 15px;
-  width: 150px;
-}
+/* Search dropdown */
+.dropdown{position:absolute;top:100%;left:0;right:0;background:#fff;border-radius:8px;border:1px solid #eee;max-height:260px;overflow:auto;margin-top:6px;padding:6px;box-shadow:0 8px 20px rgba(0,0,0,0.08)}
+.dropdown .result{padding:8px;border-radius:6px;cursor:pointer}
+.dropdown .result:hover{background:#f1f5f9}
 
-#recentSearches {
-  bottom: 230px;
-  right: 15px;
-  width: 150px;
-}
+/* Transport buttons */
+.transport{position:absolute;top:70px;right:20px;display:flex;flex-direction:column;gap:6px;z-index:1200}
+.transport .mode{width:48px;height:48px;border-radius:12px;border:none;background:#fff;box-shadow:var(--shadow);cursor:pointer;font-size:18px}
+.transport .mode.active{background:var(--accent);color:#fff}
 
-#recenterBox {
-  bottom: 230px;
-  left: 180px;
-}
+/* Sidebar (directions) */
+#sidebar{position:absolute;top:70px;right:20px;width:360px;max-height:70vh;overflow:auto;z-index:1200}
+#sidebar section{background:var(--panel);padding:12px;border-radius:12px;box-shadow:var(--shadow)}
+#directions h3{margin:0 0 8px 0}
+#directionsList{font-size:0.95rem;color:#111}
+.turnStep{padding:8px;border-radius:8px;margin-bottom:6px;background:#f8fafc;display:flex;justify-content:space-between;align-items:center}
 
-#measureBox {
-  bottom: 230px;
-  left: 250px;
-}
+/* Mini-panels bottom-left */
+#bottomLeft{position:absolute;left:14px;bottom:14px;display:flex;flex-direction:column;gap:10px;z-index:1200}
+.miniPanel{width:220px;background:var(--panel);padding:8px;border-radius:10px;box-shadow:var(--shadow);font-size:0.9rem}
+.miniPanel h4{margin:0 0 8px 0}
+.miniPanel ul{margin:0;padding-left:16px;max-height:110px;overflow:auto}
 
-#shareBox {
-  bottom: 230px;
-  left: 320px;
-}
+/* Floating actions bottom-right */
+#floatingActions{position:absolute;right:14px;bottom:14px;display:flex;flex-direction:column;gap:8px;z-index:1200}
+#floatingActions button{width:56px;height:56px;border-radius:50%;border:none;background:#fff;box-shadow:var(--shadow);cursor:pointer;font-size:18px}
 
-#reportBox {
-  bottom: 230px;
-  left: 390px;
-}
+/* Recenter box (center bottom above directions) */
+#recenterBox{position:absolute;left:50%;transform:translateX(-50%);bottom:240px;background:var(--panel);padding:8px;border-radius:20px;box-shadow:var(--shadow);z-index:1200}
 
-.floatingBtn {
-  position: absolute;
-  bottom: 280px;
-  right: 15px;
-  border: none;
-  background: #4285f4;
-  color: white;
-  font-size: 18px;
-  padding: 12px;
-  border-radius: 50%;
-  cursor: pointer;
-  z-index: 1200;
-}
+/* Modal */
+.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);z-index:2000}
+.modal.hidden{display:none}
+.modalContent{width:320px;background:var(--panel);padding:16px;border-radius:12px;box-shadow:var(--shadow)}
+.modalContent h2{margin-top:0}
+.modalContent label{display:block;margin:8px 0;font-weight:600}
+.modalContent select,input{width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;margin-top:6px}
+.modalActions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
 
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-.modal.hidden { display: none; }
-.modal-content {
-  background: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  width: 300px;
-}
+/* Toast */
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:100px;background:#111;color:#fff;padding:8px 14px;border-radius:8px;z-index:2100;box-shadow:var(--shadow)}
+.hidden{display:none}
 
-#toast {
-  position: absolute;
-  bottom: 100px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #333;
-  color: #fff;
-  padding: 10px 20px;
-  border-radius: 6px;
-  opacity: 0.9;
-  z-index: 1500;
+/* Responsive */
+@media (max-width:900px){
+  #uiSearch input{width:230px}
+  #sidebar{display:none}
+  .miniPanel{width:160px}
 }
-#toast.hidden { display: none; }
