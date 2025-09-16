@@ -1,77 +1,107 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <meta charset="UTF-8">
-  <title>Navigator</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Navigering</title>
+  <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 <body>
-  <!-- KARTA -->
   <div id="map"></div>
 
-  <!-- SÖKBAR -->
-  <div id="searchBar">
-    <input type="text" id="searchInput" placeholder="Sök plats eller adress..." />
+  <!-- Sökfält -->
+  <div id="searchBox" class="panel">
+    <input id="searchInput" type="text" placeholder="Sök plats..." />
     <button id="searchBtn">🔍</button>
   </div>
 
-  <!-- DIRECTIONS -->
-  <div id="directions">
-    <h3>Färdbeskrivningar</h3>
-    <ul id="directionsList">
-      <li>Starta en rutt för att se vägbeskrivning...</li>
-    </ul>
+  <!-- Directions (alltid längst ner) -->
+  <div id="directions" class="panel">
+    <h3>Färdbeskrivning</h3>
+    <div id="directionsList">Ingen rutt aktiv.</div>
+    <div id="turnControls" class="hidden">
+      <button id="btnPrevStep">⬅️ Föregående</button>
+      <button id="btnNextStep">➡️ Nästa</button>
+      <button id="btnCancelRoute">❌ Avbryt</button>
+    </div>
   </div>
 
-  <!-- FAVORITER -->
-  <div id="favorites">
-    <h4>Favoriter</h4>
-    <ul>
-      <li>🏠 Hem</li>
-      <li>💼 Jobb</li>
-    </ul>
+  <!-- Favoriter -->
+  <div id="favorites" class="panel">
+    <h3>Favoriter</h3>
+    <ul id="favList"></ul>
+    <button id="saveHome">🏠 Spara Hem</button>
+    <button id="saveWork">💼 Spara Jobb</button>
   </div>
 
-  <!-- SENASTE SÖKNINGAR -->
-  <div id="recentSearches">
-    <h4>Senaste sökningar</h4>
-    <ul>
-      <li>Kungsträdgården</li>
-      <li>Stockholm Central</li>
-    </ul>
+  <!-- Senaste sökningar -->
+  <div id="recentSearches" class="panel">
+    <h3>Senaste</h3>
+    <ul id="recentList"></ul>
   </div>
 
-  <!-- TOGGLE RECENTER -->
-  <div id="recenterBox">
-    <button id="recenterBtn">📍 Recenter</button>
+  <!-- Recenter -->
+  <div id="recenterBox" class="panel">
+    <button id="btnLocate">📍 Centrera</button>
   </div>
 
-  <!-- INSTÄLLNINGAR -->
-  <div id="settingsPanel" class="hidden">
-    <h3>Inställningar</h3>
-    <label><input type="checkbox" id="toggleDarkMode"> Dark Mode</label><br>
-    <label><input type="checkbox" id="toggleFollowUser"> Följ läge</label><br>
-    <label for="languageSelect">Språk:</label>
-    <select id="languageSelect">
-      <option value="sv">Svenska</option>
-      <option value="en">English</option>
-      <option value="de">Deutsch</option>
-      <option value="es">Español</option>
-    </select><br>
-    <label for="modeSelect">Färdsätt:</label>
-    <select id="modeSelect">
-      <option value="driving">🚗 Bil</option>
-      <option value="cycling">🚴 Cykel</option>
-      <option value="walking">🚶 Gång</option>
-      <option value="transit">🚌 Kollektivtrafik</option>
-    </select>
+  <!-- Mätverktyg -->
+  <div id="measureBox" class="panel">
+    <button id="btnMeasure">📏 Mät</button>
   </div>
 
-  <!-- INSTÄLLNINGAR KNAPP -->
-  <button id="settingsBtn">⚙️</button>
+  <!-- Dela plats -->
+  <div id="shareBox" class="panel">
+    <button id="btnShare">🔗 Dela</button>
+  </div>
 
+  <!-- Rapportera -->
+  <div id="reportBox" class="panel">
+    <button id="btnReport">⚠️ Rapportera</button>
+  </div>
+
+  <!-- Inställningar-knapp -->
+  <button id="btnSettings" class="floatingBtn">⚙️</button>
+
+  <!-- Inställningar-popup -->
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Inställningar</h2>
+      <label>Språk:
+        <select id="settingLanguage">
+          <option value="sv">Svenska</option>
+          <option value="en">Engelska</option>
+          <option value="de">Tyska</option>
+          <option value="es">Spanska</option>
+        </select>
+      </label>
+      <label>Tema:
+        <select id="settingTheme">
+          <option value="light">Ljust</option>
+          <option value="dark">Mörkt</option>
+        </select>
+      </label>
+      <label>UI-position:
+        <select id="settingUiPos">
+          <option value="top">Uppe</option>
+          <option value="bottom">Nere</option>
+        </select>
+      </label>
+      <label><input type="checkbox" id="toggleTraffic" /> Visa trafik</label>
+      <label><input type="checkbox" id="toggleWeather" /> Visa vädervarningar</label>
+      <label><input type="checkbox" id="togglePOI" /> Visa ladd/parkering</label>
+      <label><input type="checkbox" id="toggleAutoReroute" /> Automatisk omläggning</label>
+      <button id="saveSettingsBtn">💾 Spara</button>
+      <button id="closeSettings">❌ Stäng</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="hidden"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="config.cfg"></script>
   <script src="script.js"></script>
 </body>
 </html>
