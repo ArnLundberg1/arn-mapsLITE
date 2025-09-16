@@ -1,114 +1,160 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="sv">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Navigering</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Navigeringsapp — Demo</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Optional leaflet plugins could be added later -->
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
+  <header id="topbar">
+    <div class="brand">🗺️ Navigator</div>
+    <div class="top-actions">
+      <button id="btnSettings" title="Inställningar">⚙️</button>
+      <button id="btnProfile" title="Profil">👤</button>
+    </div>
+  </header>
+
+  <!-- Map container -->
   <div id="map"></div>
 
-<!-- Sökfält -->
-<div id="searchBox" class="panel">
-  <input id="searchInput" type="text" placeholder="Sök plats..." />
-  <button id="searchBtn">🔍</button>
-</div>
+  <!-- Centered search bar (can be toggled to bottom via settings) -->
+  <div id="uiSearch">
+    <input id="searchInput" placeholder="Sök plats, adress eller POI..." autocomplete="off" />
+    <button id="searchBtn">🔍</button>
+    <div id="searchResults" class="dropdown hidden"></div>
+  </div>
 
-  <!-- Directions (alltid längst ner) -->
-  <div id="directions" class="panel">
-    <h3>Färdbeskrivning</h3>
-    <div id="directionsList">Ingen rutt aktiv.</div>
-    <div id="turnControls" class="hidden">
-      <button id="btnPrevStep">⬅️ Föregående</button>
-      <button id="btnNextStep">➡️ Nästa</button>
-      <button id="btnCancelRoute">❌ Avbryt</button>
+  <!-- Transport quick buttons (small) -->
+  <div id="transportButtons" class="transport">
+    <button data-mode="driving" class="mode active" title="Bil">🚗</button>
+    <button data-mode="cycling" class="mode" title="Cykel">🚴</button>
+    <button data-mode="walking" class="mode" title="Gång">🚶</button>
+    <button data-mode="transit" class="mode" title="Kollektivtrafik">🚌</button>
+  </div>
+
+  <!-- Right side: directions (keeps persistent) -->
+  <aside id="sidebar">
+    <section id="directions">
+      <h3>Färdbeskrivning</h3>
+      <div id="directionsList">Ingen rutt aktiv.</div>
+      <div id="turnControls" class="hidden">
+        <button id="btnPrevStep">◀️ Föregående</button>
+        <button id="btnNextStep">Nästa ▶️</button>
+        <button id="btnCancelRoute">❌ Avbryt rutt</button>
+      </div>
+    </section>
+  </aside>
+
+  <!-- Bottom-left: recent & favorites (small tiles) -->
+  <div id="bottomLeft">
+    <div id="recent" class="miniPanel">
+      <h4>Senaste sökningar</h4>
+      <ul id="recentList"></ul>
+    </div>
+
+    <div id="favorites" class="miniPanel">
+      <h4>Favoriter</h4>
+      <ul id="favList"></ul>
+      <div class="favButtons">
+        <button id="saveHome">🏠 Spara Hem</button>
+        <button id="saveWork">💼 Spara Jobb</button>
+      </div>
     </div>
   </div>
 
-  <!-- Favoriter -->
-  <div id="favorites" class="panel">
-    <h3>Favoriter</h3>
-    <ul id="favList"></ul>
-    <button id="saveHome">🏠 Spara Hem</button>
-    <button id="saveWork">💼 Spara Jobb</button>
+  <!-- Bottom-right floating actions (locate, measure, share, report) -->
+  <div id="floatingActions">
+    <button id="btnLocate" title="Följ/Dra till min position">📍</button>
+    <button id="btnMeasure" title="Mät avstånd">📏</button>
+    <button id="btnShare" title="Dela vy">🔗</button>
+    <button id="btnReport" title="Rapportera hinder">⚠️</button>
   </div>
 
-  <!-- Senaste sökningar -->
-  <div id="recentSearches" class="panel">
-    <h3>Senaste</h3>
-    <ul id="recentList"></ul>
+  <!-- Recenter small box (center bottom above directions) -->
+  <div id="recenterBox">
+    <label><input id="toggleRecenter" type="checkbox" /> Återpositionering</label>
   </div>
 
-  <!-- Recenter -->
-  <div id="recenterBox" class="panel">
-    <button id="btnLocate">📍 Centrera</button>
-  </div>
+  <!-- Settings modal -->
+  <div id="settingsModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modalContent">
+      <button class="closeModal" id="closeSettings" title="Stäng">&times;</button>
+      <h2>⚙️ Inställningar</h2>
 
-  <!-- Mätverktyg -->
-  <div id="measureBox" class="panel">
-    <button id="btnMeasure">📏 Mät</button>
-  </div>
-
-  <!-- Dela plats -->
-  <div id="shareBox" class="panel">
-    <button id="btnShare">🔗 Dela</button>
-  </div>
-
-  <!-- Rapportera -->
-  <div id="reportBox" class="panel">
-    <button id="btnReport">⚠️ Rapportera</button>
-  </div>
-
-  <!-- Inställningar-knapp -->
-  <button id="btnSettings" class="floatingBtn">⚙️</button>
-
-  <!-- Inställningar-popup -->
-  <div id="settingsModal" class="modal hidden">
-    <div class="modal-content">
-      <h2>Inställningar</h2>
-      <label>Språk:
+      <label>Språk
         <select id="settingLanguage">
           <option value="sv">Svenska</option>
-          <option value="en">Engelska</option>
-          <option value="de">Tyska</option>
-          <option value="es">Spanska</option>
+          <option value="en">English</option>
+          <option value="de">Deutsch</option>
+          <option value="es">Español</option>
         </select>
-        <label for="defaultMode">Standardfärdmedel</label>
-<select id="defaultMode">
-  <option value="driving">Bil 🚗</option>
-  <option value="cycling">Cykel 🚴</option>
-  <option value="walking">Gång 🚶</option>
-  <option value="transit">Kollektivtrafik 🚆</option>
-</select>
       </label>
-      <label>Tema:
+
+      <label>Tema
         <select id="settingTheme">
           <option value="light">Ljust</option>
           <option value="dark">Mörkt</option>
         </select>
       </label>
-      <label>UI-position:
+
+      <label>UI placering
         <select id="settingUiPos">
-          <option value="top">Uppe</option>
-          <option value="bottom">Nere</option>
+          <option value="top">UI uppe</option>
+          <option value="bottom">UI nere</option>
         </select>
       </label>
-      <label><input type="checkbox" id="toggleTraffic" /> Visa trafik</label>
-      <label><input type="checkbox" id="toggleWeather" /> Visa vädervarningar</label>
-      <label><input type="checkbox" id="togglePOI" /> Visa ladd/parkering</label>
-      <label><input type="checkbox" id="toggleAutoReroute" /> Automatisk omläggning</label>
-      <button id="saveSettingsBtn">💾 Spara</button>
-      <button id="closeSettings">❌ Stäng</button>
+
+      <label>Standard färdmedel
+        <select id="defaultMode">
+          <option value="driving">Bil 🚗</option>
+          <option value="cycling">Cykel 🚴</option>
+          <option value="walking">Gång 🚶</option>
+          <option value="transit">Kollektivtrafik 🚌</option>
+        </select>
+      </label>
+
+      <div class="toggles">
+        <label><input id="toggleTraffic" type="checkbox" /> Trafik (Trafikverket)</label>
+        <label><input id="toggleWeather" type="checkbox" /> Vädervarningar</label>
+        <label><input id="togglePOI" type="checkbox" /> POI (ladd/parkering)</label>
+        <label><input id="toggleAutoReroute" type="checkbox" /> Automatisk omläggning</label>
+        <label><input id="toggleTTS" type="checkbox" checked /> Röstnavigation (TTS)</label>
+      </div>
+
+      <div class="modalActions">
+        <button id="saveSettingsBtn">Spara</button>
+      </div>
     </div>
   </div>
 
-  <!-- Toast -->
-  <div id="toast" class="hidden"></div>
+  <!-- Profile modal (local profile) -->
+  <div id="profileModal" class="modal hidden">
+    <div class="modalContent">
+      <button class="closeModal" id="closeProfile">&times;</button>
+      <h2>Profil</h2>
+      <label>Namnet</label>
+      <input id="profileName" placeholder="Ditt namn" />
+      <label>Email</label>
+      <input id="profileEmail" placeholder="me@example.com" />
+      <div><button id="saveProfile">Spara profil (lokalt)</button></div>
+      <p class="muted">Notera: detta sparas lokalt i din webbläsare.</p>
+    </div>
+  </div>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <!-- Hidden toast -->
+  <div id="toast" class="hidden" role="status"></div>
+
+  <!-- Config file (js that sets window.APP_CONFIG) -->
   <script src="config.cfg"></script>
+
+  <!-- App logic -->
   <script src="script.js"></script>
 </body>
 </html>
