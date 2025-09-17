@@ -1,210 +1,223 @@
-/* ======== Global ======== */
+/* Grundlayout */
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
   width: 100%;
-  font-family: system-ui, sans-serif;
+  font-family: Arial, sans-serif;
+  background: #f0f0f0;
 }
 
+/* Karta */
 #map {
   height: 100%;
   width: 100%;
   position: absolute;
-  top: 0; left: 0;
-  z-index: 0;
+  top: 0;
+  left: 0;
 }
 
-button {
-  cursor: pointer;
-  border: none;
-  border-radius: 8px;
-  padding: 6px 10px;
-  margin: 4px;
-  font-size: 14px;
-  background: #f0f0f0;
-  transition: background 0.2s;
-}
-button:hover {
-  background: #e0e0e0;
-}
-button.danger {
-  background: #e74c3c;
-  color: #fff;
-}
-button.danger:hover {
-  background: #c0392b;
-}
-button.active {
-  background: #2b7ae4;
-  color: #fff;
-}
-
-/* ======== Top Bar ======== */
-#topBar {
+/* Sökfält */
+#searchBar {
   position: absolute;
   top: 10px;
   left: 50%;
   transform: translateX(-50%);
-  display: flex;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-  padding: 6px;
   z-index: 1000;
-}
-#topBar input {
-  border: none;
-  outline: none;
-  padding: 6px;
+  display: flex;
+  background: white;
   border-radius: 8px;
-  width: 220px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
-#topBar button {
-  background: transparent;
+#searchBar input {
+  border: none;
+  padding: 8px;
+  font-size: 14px;
+  width: 250px;
+  outline: none;
+  border-radius: 8px 0 0 8px;
+}
+#searchBar button {
+  border: none;
+  background: #4285f4;
+  color: white;
+  padding: 8px 12px;
   font-size: 16px;
+  cursor: pointer;
+  border-radius: 0 8px 8px 0;
+}
+#searchBar button:hover {
+  background: #3367d6;
 }
 
-/* ======== Bottom UI ======== */
-#bottomUI {
+/* Kontrollknappar (höger) */
+#controls {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background: #fff;
-  border-radius: 12px 12px 0 0;
-  box-shadow: 0 -2px 6px rgba(0,0,0,0.25);
+  right: 10px;
+  top: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1000;
+}
+#controls button {
+  background: white;
+  border: none;
+  padding: 10px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+#controls button:hover {
+  background: #f1f1f1;
+}
+
+/* Vägbeskrivning */
+#directionsPanel {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  width: 300px;
+  max-height: 40%;
+  overflow-y: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
   padding: 10px;
   z-index: 1000;
 }
-#transportButtons {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 6px;
+#directionsPanel h3 {
+  margin: 0 0 5px;
 }
 #turnControls {
+  margin-top: 10px;
   display: flex;
   justify-content: space-between;
-  margin: 8px 0;
 }
-#directionsList {
-  max-height: 140px;
-  overflow-y: auto;
-  font-size: 14px;
-}
-.turnStep {
-  padding: 4px 6px;
-  border-bottom: 1px solid #ddd;
-}
-.turnStep .instr { font-weight: 600; }
-.turnStep .meta { font-size: 12px; color: #666; }
-
-/* ======== Side Panels ======== */
-#sidePanels {
-  position: absolute;
-  top: 70px;
-  right: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  z-index: 1000;
-}
-.panel {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-  padding: 8px;
-  width: 200px;
-  max-height: 180px;
-  overflow-y: auto;
-}
-.panel.small {
-  max-height: 120px;
-}
-.panel h3 {
-  font-size: 14px;
-  margin: 4px 0 6px;
-}
-.panel ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.panel ul li {
-  padding: 4px 2px;
-  border-bottom: 1px solid #eee;
+#turnControls button {
+  background: #4285f4;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
   cursor: pointer;
 }
-.panel ul li:hover {
-  background: #f5f5f5;
+#turnControls button:hover {
+  background: #3367d6;
+}
+.hidden {
+  display: none !important;
 }
 
-/* ======== Modal ======== */
-.modal {
+/* Favoriter */
+#favoritesPanel {
+  position: absolute;
+  right: 10px;
+  bottom: 150px;
+  width: 200px;
+  max-height: 20%;
+  overflow-y: auto;
+  background: white;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  z-index: 1000;
+}
+#favoritesPanel h3 {
+  margin: 0 0 5px;
+}
+#favoritesPanel button {
+  margin-top: 5px;
+  width: 100%;
+  background: #34a853;
+  color: white;
+  border: none;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#favoritesPanel button:hover {
+  background: #2c8c46;
+}
+
+/* Senaste sökningar */
+#recentPanel {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 200px;
+  max-height: 20%;
+  overflow-y: auto;
+  background: white;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  z-index: 1000;
+}
+#recentPanel h3 {
+  margin: 0 0 5px;
+}
+
+/* Toast (notiser) */
+#toast {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #323232;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  z-index: 2000;
+  opacity: 0.9;
+}
+
+/* Inställningar modal */
+#settingsModal {
   position: fixed;
-  top: 0; left: 0;
-  height: 100%; width: 100%;
-  background: rgba(0,0,0,0.5);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.6);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: 3000;
 }
-.modal.hidden { display: none; }
-.modal-content {
-  background: #fff;
-  border-radius: 12px;
+#settingsModal.hidden {
+  display: none;
+}
+.modalContent {
+  background: white;
   padding: 20px;
-  width: 300px;
-  max-width: 90%;
+  border-radius: 10px;
+  width: 320px;
+  max-height: 80%;
+  overflow-y: auto;
 }
-.modal-content h2 {
+.modalContent h2 {
   margin-top: 0;
 }
-.modal-content label {
+.modalContent label {
   display: block;
-  margin: 8px 0 4px;
+  margin: 10px 0 4px;
 }
-.modal-content select,
-.modal-content input[type="checkbox"] {
+.modalContent select, 
+.modalContent input[type="checkbox"] {
   margin-bottom: 10px;
 }
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 12px;
-}
-.modal-actions button {
-  margin-left: 8px;
-}
-
-/* ======== Toast ======== */
-#toast {
-  position: absolute;
-  bottom: 100px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #2b7ae4;
-  color: #fff;
+.modalContent button {
+  margin-top: 10px;
   padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  z-index: 3000;
-  opacity: 0;
-  transition: opacity 0.3s;
+  background: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
-#toast.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-#toast:not(.hidden) {
-  opacity: 1;
-}
-
-/* ======== Responsive ======== */
-@media (max-width: 600px) {
-  #topBar input { width: 140px; }
-  #sidePanels { right: auto; left: 10px; flex-direction: row; overflow-x: auto; }
-  .panel { width: 150px; }
+.modalContent button:hover {
+  background: #3367d6;
 }
