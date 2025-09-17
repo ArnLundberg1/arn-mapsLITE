@@ -2,70 +2,63 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8">
-  <title>Navigeringsapp</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <!-- Ikoner -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-
-  <!-- Egna filer -->
+  <title>Navigeringskarta</title>
   <link rel="stylesheet" href="style.css">
-  <script src="config.js"></script>
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 <body>
-  <!-- Karta -->
+  <!-- Sökfält -->
+  <div id="searchBar">
+    <input type="text" id="searchInput" placeholder="Sök plats eller adress...">
+    <button id="searchBtn">🔍</button>
+  </div>
+
+  <!-- Kartan -->
   <div id="map"></div>
 
-  <!-- Top Bar -->
-  <div id="topBar">
-    <input type="text" id="searchInput" placeholder="Sök plats, adress eller POI...">
-    <button id="searchBtn"><i class="fa fa-search"></i></button>
-    <button id="btnSettings"><i class="fa fa-cog"></i></button>
+  <!-- Kontroller (höger) -->
+  <div id="controls">
+    <button id="btnLocate">📍</button>
+    <button id="btnMeasure">📏</button>
+    <button id="btnShare">🔗</button>
+    <button id="btnReport">⚠️</button>
+    <button id="btnSettings">⚙️</button>
   </div>
 
-  <!-- Bottom UI -->
-  <div id="bottomUI">
-    <div id="transportButtons">
-      <button class="mode" data-mode="driving">🚗 Bil</button>
-      <button class="mode" data-mode="cycling">🚴 Cykel</button>
-      <button class="mode" data-mode="walking">🚶 Gång</button>
-      <button class="mode" data-mode="transit">🚌 Kollektiv</button>
-    </div>
-    <div id="turnControls" class="hidden">
-      <button id="btnPrevStep"><i class="fa fa-chevron-left"></i></button>
-      <button id="btnNextStep"><i class="fa fa-chevron-right"></i></button>
-      <button id="btnCancelRoute" class="danger"><i class="fa fa-times"></i> Avbryt</button>
-    </div>
+  <!-- Vägbeskrivning (vänster) -->
+  <div id="directionsPanel">
+    <h3>Vägbeskrivning</h3>
     <div id="directionsList">Ingen rutt aktiv.</div>
-  </div>
-
-  <!-- Side Panels -->
-  <div id="sidePanels">
-    <div class="panel" id="recentsPanel">
-      <h3>Senaste sökningar</h3>
-      <ul id="recentList"></ul>
-    </div>
-    <div class="panel small" id="favoritesPanel">
-      <h3>Favoriter</h3>
-      <button id="saveHome">🏠 Spara Hem</button>
-      <button id="saveWork">💼 Spara Jobb</button>
-      <ul id="favList"></ul>
-    </div>
-    <div class="panel small" id="toolsPanel">
-      <h3>Verktyg</h3>
-      <button id="btnLocate">📍 Centrera</button>
-      <button id="btnMeasure">📏 Mät</button>
-      <button id="btnShare">🔗 Dela</button>
-      <button id="btnReport">⚠️ Rapportera</button>
+    <div id="turnControls" class="hidden">
+      <button id="btnPrevStep">⬆️ Föregående</button>
+      <button id="btnNextStep">⬇️ Nästa</button>
+      <button id="btnCancelRoute">❌ Avbryt</button>
     </div>
   </div>
 
-  <!-- Settings Modal -->
-  <div id="settingsModal" class="modal hidden">
-    <div class="modal-content">
+  <!-- Favoriter -->
+  <div id="favoritesPanel">
+    <h3>Favoriter</h3>
+    <ul id="favList"></ul>
+    <button id="saveHome">🏠 Spara Hem</button>
+    <button id="saveWork">💼 Spara Jobb</button>
+  </div>
+
+  <!-- Senaste sökningar -->
+  <div id="recentPanel">
+    <h3>Senaste sökningar</h3>
+    <ul id="recentList"></ul>
+  </div>
+
+  <!-- Toast (notiser) -->
+  <div id="toast" class="hidden"></div>
+
+  <!-- Inställningar (popup) -->
+  <div id="settingsModal" class="hidden">
+    <div class="modalContent">
       <h2>Inställningar</h2>
       <label for="settingLanguage">Språk:</label>
       <select id="settingLanguage">
@@ -81,37 +74,32 @@
         <option value="dark">Mörkt</option>
       </select>
 
-      <label for="settingUiPos">UI placering:</label>
+      <label for="settingUiPos">UI Placering:</label>
       <select id="settingUiPos">
         <option value="top">Uppe</option>
         <option value="bottom">Nere</option>
       </select>
 
-      <label for="settingTransport">Standard färdmedel:</label>
-      <select id="settingTransport">
-        <option value="driving">Bil</option>
-        <option value="cycling">Cykel</option>
-        <option value="walking">Gång</option>
-        <option value="transit">Kollektivtrafik</option>
+      <label for="settingMode">Standard färdmedel:</label>
+      <select id="settingMode">
+        <option value="driving">🚗 Bil</option>
+        <option value="cycling">🚴 Cykel</option>
+        <option value="walking">🚶 Gång</option>
+        <option value="transit">🚌 Kollektivtrafik</option>
       </select>
 
       <label><input type="checkbox" id="toggleTraffic"> Visa trafik</label>
       <label><input type="checkbox" id="toggleWeather"> Visa vädervarningar</label>
-      <label><input type="checkbox" id="togglePOI"> Visa POIs (parkering/laddning)</label>
-      <label><input type="checkbox" id="toggleAutoReroute"> Automatisk omläggning</label>
-      <label><input type="checkbox" id="toggleRecenter"> Följ användaren</label>
+      <label><input type="checkbox" id="togglePOI"> Visa POI (parkering/laddning)</label>
+      <label><input type="checkbox" id="toggleAutoReroute"> Automatisk omläggning av rutt</label>
+      <label><input type="checkbox" id="toggleRecenter"> Återpositionering</label>
 
-      <div class="modal-actions">
-        <button id="saveSettingsBtn">Spara</button>
-        <button id="closeSettings">Stäng</button>
-      </div>
+      <button id="saveSettingsBtn">Spara</button>
+      <button id="closeSettings">Stäng</button>
     </div>
   </div>
 
-  <!-- Toast -->
-  <div id="toast" class="hidden"></div>
-
-  <!-- Script -->
+  <script src="config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
