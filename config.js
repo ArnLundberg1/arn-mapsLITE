@@ -7,7 +7,7 @@ window.APP_CONFIG = {
     attribution: "&copy; OpenStreetMap contributors"
   },
   osrm: "https://router.project-osrm.org",
-  nominatim: "https://nominatim.openstreetmap.org",   // 👈 ändra här
+  nominatim: "https://nominatim.openstreetmap.org/search",   // 👈 ändra här
   trafikverket: {
     apiUrl: "https://api.trafikinfo.trafikverket.se/v2/data.json",
     apiKey: "1ea923daae314b80addd205c26007e35"
