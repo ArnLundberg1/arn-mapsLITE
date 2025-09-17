@@ -1,267 +1,217 @@
-// === Globala variabler ===
-let map, userMarker, destinationMarker, routeLayer;
-let directions = [];
-let currentStep = 0;
-let followUser = false;
-let selectedMode = localStorage.getItem("transportMode") || "driving";
+// Initiera karta
+const map = L.map("map").setView([59.3293, 18.0686], 13);
+let currentTheme = "light";
 
-// === Initiera kartan ===
-document.addEventListener("DOMContentLoaded", () => {
-  initMap();
-  initUI();
-  restoreSettings();
+// Lager
+const lightLayer = L.tileLayer(window.APP_CONFIG.map.tiles.light, {
+  attribution: window.APP_CONFIG.map.attribution
 });
+const darkLayer = L.tileLayer(window.APP_CONFIG.map.tiles.dark, {
+  attribution: window.APP_CONFIG.map.attribution
+});
+lightLayer.addTo(map);
 
-// === Kartinitiering ===
-function initMap() {
-  map = L.map("map").setView([59.3293, 18.0686], 13); // Start: Stockholm
+// Markörer och variabler
+let userMarker, destMarker, routeLayer;
+let followMode = true;
+let currentRoute = null;
+let currentStepIndex = 0;
 
-  const light = L.tileLayer(window.APP_CONFIG.map.tiles.light, {
-    attribution: window.APP_CONFIG.map.attribution,
-  });
-  const dark = L.tileLayer(window.APP_CONFIG.map.tiles.dark, {
-    attribution: window.APP_CONFIG.map.attribution,
-  });
-
-  light.addTo(map);
-  map._layersControl = { light, dark };
-
-  locateUser();
-}
-
-// === UI-kopplingar ===
-function initUI() {
-  document.getElementById("searchBtn").addEventListener("click", () => {
-    const query = document.getElementById("searchInput").value.trim();
-    if (query) searchPlace(query);
-  });
-
-  document.querySelectorAll(".mode").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      selectedMode = btn.dataset.mode;
-      localStorage.setItem("transportMode", selectedMode);
-      toast(`Färdmedel: ${btn.innerText}`);
-    });
-  });
-
-  document.getElementById("btnNextStep").addEventListener("click", nextStep);
-  document.getElementById("btnPrevStep").addEventListener("click", prevStep);
-  document.getElementById("btnCancelRoute").addEventListener("click", cancelRoute);
-
-  // Inställningar
-  document.getElementById("btnSettings").addEventListener("click", () => {
-    document.getElementById("settingsModal").classList.remove("hidden");
-  });
-  document.getElementById("closeSettings").addEventListener("click", () => {
-    document.getElementById("settingsModal").classList.add("hidden");
-  });
-  document.getElementById("saveSettingsBtn").addEventListener("click", saveSettings);
-
-  document.getElementById("btnLocate").addEventListener("click", () => {
-    followUser = true;
-    locateUser();
-  });
-}
-
-// === Användarens position ===
-function locateUser() {
-  if (!navigator.geolocation) {
-    toast("GPS ej tillgänglig");
-    return;
-  }
-  navigator.geolocation.getCurrentPosition(
+// Geolocation
+if (navigator.geolocation) {
+  navigator.geolocation.watchPosition(
     (pos) => {
-      const { latitude, longitude } = pos.coords;
+      const latlng = [pos.coords.latitude, pos.coords.longitude];
       if (!userMarker) {
-        userMarker = L.marker([latitude, longitude], { icon: L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/447/447031.png", iconSize: [32, 32] }) }).addTo(map);
+        userMarker = L.marker(latlng).addTo(map).bindPopup("Du är här");
+        map.setView(latlng, 15);
       } else {
-        userMarker.setLatLng([latitude, longitude]);
+        userMarker.setLatLng(latlng);
       }
-      if (followUser) map.setView([latitude, longitude], 15);
+      if (followMode) map.setView(latlng);
     },
-    () => toast("Kunde inte hämta plats"),
+    (err) => {
+      showToast("Kunde inte hämta plats. Tillåt platsåtkomst.");
+    },
     { enableHighAccuracy: true }
   );
 }
 
-// === Sökning via Nominatim ===
-function searchPlace(query) {
-  const url = `${window.APP_CONFIG.nominatim}?q=${encodeURIComponent(query)}&format=json&limit=1&addressdetails=1&accept-language=sv`;
-  fetch(url)
-    .then((r) => r.json())
-    .then((data) => {
-      if (!data.length) return toast("Ingen plats hittad");
-      const place = data[0];
-      const lat = parseFloat(place.lat);
-      const lon = parseFloat(place.lon);
+// Sök
+document.getElementById("searchBtn").addEventListener("click", () => {
+  const query = document.getElementById("searchInput").value;
+  if (!query) return;
 
-      if (destinationMarker) map.removeLayer(destinationMarker);
-      destinationMarker = L.marker([lat, lon]).addTo(map)
-        .bindPopup(`<b>${place.display_name}</b><br><button onclick="startRoute([${lat}, ${lon}])">Starta Rutt</button>`)
-        .openPopup();
-      map.setView([lat, lon], 14);
+  fetch(`${window.APP_CONFIG.nominatim}?q=${encodeURIComponent(query)}&format=json&limit=1`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.length > 0) {
+        const { lat, lon, display_name } = data[0];
+        const latlng = [parseFloat(lat), parseFloat(lon)];
+        if (destMarker) map.removeLayer(destMarker);
+        destMarker = L.marker(latlng).addTo(map).bindPopup(`
+          <b>${display_name}</b><br>
+          <button onclick="startRoute([${lat}, ${lon}])">Starta rutt</button>
+        `).openPopup();
+        map.setView(latlng, 14);
+        addRecentSearch(display_name);
+      } else {
+        showToast("Ingen plats hittades");
+      }
     })
-    .catch((err) => {
-      console.error("Nominatim fel:", err);
-      toast("Fel vid sökning");
-    });
-}
+    .catch(() => showToast("Sökfel"));
+});
 
-// === Starta rutt ===
+// Ruttplanering
 function startRoute(dest) {
   if (!userMarker) {
-    toast("Ingen startposition");
+    showToast("Ingen startposition");
     return;
   }
+
   const start = userMarker.getLatLng();
+  const mode = document.getElementById("settingMode").value;
 
-  if (selectedMode === "transit") {
-    planTransitRoute(start, dest);
-  } else {
-    planOSRMRoute(start, dest, selectedMode);
-  }
-}
+  let profile = "driving";
+  if (mode === "cycling") profile = "cycling";
+  if (mode === "walking") profile = "walking";
+  if (mode === "transit") profile = "driving"; // placeholder
 
-// === OSRM-rutt (bil/cykel/gång) ===
-function planOSRMRoute(start, dest, mode) {
-  const url = `${window.APP_CONFIG.osrm}/route/v1/${mode}/${start.lng},${start.lat};${dest[1]},${dest[0]}?overview=full&geometries=geojson&steps=true&annotations=maxspeed`;
+  const url = `${window.APP_CONFIG.osrm}/route/v1/${profile}/${start.lng},${start.lat};${dest[1]},${dest[0]}?steps=true&geometries=geojson`;
 
   fetch(url)
-    .then((r) => r.json())
-    .then((data) => {
-      if (!data.routes || !data.routes.length) return toast("Ingen rutt hittades");
-      const route = data.routes[0];
-
+    .then(res => res.json())
+    .then(data => {
+      if (!data.routes || !data.routes.length) {
+        showToast("Ingen rutt hittades");
+        return;
+      }
       if (routeLayer) map.removeLayer(routeLayer);
-      routeLayer = L.geoJSON(route.geometry, { color: "blue", weight: 5 }).addTo(map);
-      map.fitBounds(routeLayer.getBounds());
 
-      directions = route.legs[0].steps.map((s) => s.maneuver.instruction);
-      currentStep = 0;
-      updateDirectionsUI();
-      speakDirection(directions[currentStep]);
+      currentRoute = data.routes[0];
+      routeLayer = L.geoJSON(currentRoute.geometry).addTo(map);
+      currentStepIndex = 0;
+      updateDirections();
+      document.getElementById("turnControls").classList.remove("hidden");
     })
-    .catch((err) => {
-      console.error("OSRM fel:", err);
-      toast("Kunde inte planera rutt");
-    });
+    .catch(() => showToast("Fel vid ruttberäkning"));
 }
 
-// === ResRobot-rutt (kollektivtrafik) ===
-function planTransitRoute(start, dest) {
-  const url = `${window.APP_CONFIG.resrobot.apiUrl}/trip.json?key=${window.APP_CONFIG.resrobot.apiKey}&originCoordLat=${start.lat}&originCoordLong=${start.lng}&destCoordLat=${dest[0]}&destCoordLong=${dest[1]}&format=json`;
+// Uppdatera vägbeskrivning
+function updateDirections() {
+  if (!currentRoute) return;
+  const steps = currentRoute.legs[0].steps;
+  const panel = document.getElementById("directionsList");
+  panel.innerHTML = "";
 
-  fetch(url)
-    .then((r) => r.json())
-    .then((data) => {
-      if (!data.Trip || !data.Trip.length) return toast("Ingen kollektivtrafikresa hittades");
+  const shownSteps = steps.slice(currentStepIndex, currentStepIndex + 2);
+  shownSteps.forEach((s, i) => {
+    const div = document.createElement("div");
+    div.innerHTML = `${s.maneuver.instruction}`;
+    panel.appendChild(div);
+  });
 
-      const trip = data.Trip[0];
-      directions = [];
-
-      trip.Leg.forEach((leg) => {
-        if (leg.type === "WALK") {
-          directions.push(`Gå till ${leg.Origin.name}`);
-        } else {
-          directions.push(`${leg.name} från ${leg.Origin.name} → ${leg.Destination.name}`);
-        }
-      });
-
-      currentStep = 0;
-      updateDirectionsUI();
-      speakDirection(directions[currentStep]);
-    })
-    .catch((err) => {
-      console.error("ResRobot fel:", err);
-      toast("Kunde inte planera kollektivtrafikresa");
-    });
+  // TTS
+  const msg = new SpeechSynthesisUtterance(shownSteps[0].maneuver.instruction);
+  speechSynthesis.speak(msg);
 }
 
-// === Navigering steg ===
-function nextStep() {
-  if (currentStep < directions.length - 1) {
-    currentStep++;
-    updateDirectionsUI();
-    speakDirection(directions[currentStep]);
+// Nästa/föregående steg
+document.getElementById("btnNextStep").addEventListener("click", () => {
+  if (!currentRoute) return;
+  if (currentStepIndex < currentRoute.legs[0].steps.length - 1) {
+    currentStepIndex++;
+    updateDirections();
   }
-}
-function prevStep() {
-  if (currentStep > 0) {
-    currentStep--;
-    updateDirectionsUI();
-    speakDirection(directions[currentStep]);
+});
+document.getElementById("btnPrevStep").addEventListener("click", () => {
+  if (!currentRoute) return;
+  if (currentStepIndex > 0) {
+    currentStepIndex--;
+    updateDirections();
   }
-}
+});
 
-// === Avbryt rutt ===
-function cancelRoute() {
-  if (routeLayer) {
-    map.removeLayer(routeLayer);
-    routeLayer = null;
-  }
-  if (destinationMarker) {
-    map.removeLayer(destinationMarker);
-    destinationMarker = null;
-  }
-  directions = [];
-  document.getElementById("directionsList").innerText = "Ingen rutt aktiv.";
+// Avbryt rutt
+document.getElementById("btnCancelRoute").addEventListener("click", () => {
+  if (routeLayer) map.removeLayer(routeLayer);
+  routeLayer = null;
+  currentRoute = null;
+  document.getElementById("directionsList").innerHTML = "Ingen rutt aktiv.";
   document.getElementById("turnControls").classList.add("hidden");
+  if (destMarker) map.removeLayer(destMarker);
+  destMarker = null;
+});
+
+// Favoriter & senaste sökningar
+function addRecentSearch(name) {
+  const list = document.getElementById("recentList");
+  const li = document.createElement("li");
+  li.textContent = name;
+  list.prepend(li);
+}
+document.getElementById("saveHome").addEventListener("click", () => saveFavorite("Hem"));
+document.getElementById("saveWork").addEventListener("click", () => saveFavorite("Jobb"));
+
+function saveFavorite(label) {
+  if (!userMarker) return;
+  const { lat, lng } = userMarker.getLatLng();
+  const list = document.getElementById("favList");
+  const li = document.createElement("li");
+  li.textContent = `${label}: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+  list.appendChild(li);
 }
 
-// === Uppdatera UI ===
-function updateDirectionsUI() {
-  const list = document.getElementById("directionsList");
-  if (!directions.length) {
-    list.innerText = "Ingen rutt aktiv.";
-    return;
-  }
-  list.innerHTML = `
-    <div><b>Steg ${currentStep + 1}/${directions.length}</b>: ${directions[currentStep]}</div>
-    <div class="next-step">${directions[currentStep + 1] || "Målet nått"}</div>
-  `;
-  document.getElementById("turnControls").classList.remove("hidden");
-}
-
-// === TTS ===
-function speakDirection(text) {
-  if (!("speechSynthesis" in window)) return;
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = "sv-SE";
-  speechSynthesis.speak(utter);
-}
-
-// === Inställningar ===
-function saveSettings() {
-  const lang = document.getElementById("settingLanguage").value;
+// Inställningar
+const settingsModal = document.getElementById("settingsModal");
+document.getElementById("btnSettings").addEventListener("click", () => {
+  settingsModal.classList.remove("hidden");
+});
+document.getElementById("closeSettings").addEventListener("click", () => {
+  settingsModal.classList.add("hidden");
+});
+document.getElementById("saveSettingsBtn").addEventListener("click", () => {
   const theme = document.getElementById("settingTheme").value;
-  const uiPos = document.getElementById("settingUiPos").value;
-  const transport = document.getElementById("settingTransport").value;
+  if (theme !== currentTheme) {
+    map.removeLayer(theme === "light" ? darkLayer : lightLayer);
+    (theme === "light" ? lightLayer : darkLayer).addTo(map);
+    currentTheme = theme;
+  }
+  settingsModal.classList.add("hidden");
+});
 
-  localStorage.setItem("language", lang);
-  localStorage.setItem("theme", theme);
-  localStorage.setItem("uiPos", uiPos);
-  localStorage.setItem("transportMode", transport);
-
-  toast("Inställningar sparade");
-  document.getElementById("settingsModal").classList.add("hidden");
-
-  if (theme === "dark") {
-    map.removeLayer(map._layersControl.light);
-    map._layersControl.dark.addTo(map);
-  } else {
-    map.removeLayer(map._layersControl.dark);
-    map._layersControl.light.addTo(map);
+// API integrationer
+async function loadTraffic() {
+  try {
+    const res = await fetch(window.APP_CONFIG.trafikverket.apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/xml" },
+      body: `<REQUEST>
+        <LOGIN authenticationkey="${window.APP_CONFIG.trafikverket.apiKey}" />
+        <QUERY objecttype="Situation" schemaversion="1"/>
+      </REQUEST>`
+    });
+    const data = await res.json();
+    console.log("Trafikverket data", data);
+  } catch (err) {
+    console.warn("Kunde inte hämta Trafikverket", err);
   }
 }
-function restoreSettings() {
-  const transport = localStorage.getItem("transportMode");
-  if (transport) selectedMode = transport;
+
+async function loadWeather() {
+  try {
+    const res = await fetch(window.APP_CONFIG.weather.apiUrl);
+    const data = await res.json();
+    console.log("SMHI varningar", data);
+  } catch (err) {
+    console.warn("Kunde inte hämta SMHI", err);
+  }
 }
 
-// === Hjälpfunktioner ===
-function toast(msg) {
-  const el = document.getElementById("toast");
-  el.innerText = msg;
-  el.classList.remove("hidden");
-  setTimeout(() => el.classList.add("hidden"), 3000);
+// Toast
+function showToast(msg) {
+  const toast = document.getElementById("toast");
+  toast.textContent = msg;
+  toast.classList.remove("hidden");
+  setTimeout(() => toast.classList.add("hidden"), 4000);
 }
