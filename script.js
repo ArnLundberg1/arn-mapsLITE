@@ -25,7 +25,7 @@ let settings = {
   follow: localStorage.getItem("follow") === "true" || false,
   mobile: localStorage.getItem("mobile") === "true" || false,
   // ResRobot parameters (for transit)
-  transit_products: localStorage.getItem("transit_products") || "64",   // 64 = buss
+  transit_products: localStorage.getItem("transit_products") || "511",   // 64 = buss
   transit_maxwalk: parseInt(localStorage.getItem("transit_maxwalk") || "200", 10)
 };
 
