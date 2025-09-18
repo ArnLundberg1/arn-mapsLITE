@@ -1,4 +1,4 @@
-/* script.js — komplett klientlogik (Leaflet + OSRM + ResRobot + inställningar + TTS) */
+./* script.js — komplett klientlogik (Leaflet + OSRM + ResRobot + inställningar + TTS) */
 
 /* ----------------- CONFIG ----------------- */
 const CONFIG = window.APP_CONFIG || {};
