@@ -6,11 +6,11 @@ window.APP_CONFIG = {
     },
     attribution: "&copy; OpenStreetMap contributors"
   },
-  osrm: "https://router.project-osrm.org",
-  nominatim: "https://nominatim.openstreetmap.org/search",   // 👈 ändra här
+  osrm: "https://router.project-osrm.org", // För bil, cykel, gång
+  nominatim: "https://nominatim.openstreetmap.org/search", // Geokodning (platser, adresser)
   trafikverket: {
     apiUrl: "https://api.trafikinfo.trafikverket.se/v2/data.json",
-    apiKey: "1ea923daae314b80addd205c26007e35"
+    apiKey: "1ea923daae314b80addd205c26007e35" // <-- byt ut till din riktiga nyckel
   },
   charging: {
     apiUrl: "https://api.openchargemap.io/v3/poi/"
@@ -22,7 +22,7 @@ window.APP_CONFIG = {
     apiUrl: "https://opendata.smhi.se/api/category/warnings/version/2"
   },
   resrobot: {
-    apiUrl: "https://api.resrobot.se/v2.1",   // 👈 lägg till detta
-    apiKey: "e5e2089c-3a67-4d2f-a957-b86f06b82436"
+    apiUrl: "https://api.resrobot.se/v2.1/trip", 
+    apiKey: "e5e2089c-3a67-4d2f-a957-b86f06b82436" // <-- byt till din riktiga nyckel om du vill testa kollektivtrafik
   }
 };
