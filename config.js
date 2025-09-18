@@ -21,13 +21,9 @@ window.APP_CONFIG = {
   weather: {
     apiUrl: "https://opendata.smhi.se/api/category/warnings/version/2"
   },
-  resrobot: {
-    apiUrl: "https://api.resrobot.se/v2.1/trip", 
-    apiKey: "e5e2089c-3a67-4d2f-a957-b86f06b82436" // <-- byt till din riktiga nyckel om du vill testa kollektivtrafik
-  },
     resrobot: {
     apiKey: "e5e2089c-3a67-4d2f-a957-b86f06b82436",  // Byt ut mot din Trafiklab-nyckel
-    baseUrl: "https://api.resrobot.se/v2.1",
+    baseUrl: "https://api.resrobot.se/v2.1/trip",
       // Färgmedel: Buses, Metro, Tram, Ferries, Local trains, High speed trains, Regional trains
       products: 502
     },
