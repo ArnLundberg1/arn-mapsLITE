@@ -2,104 +2,69 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Navigeringskarta</title>
   <link rel="stylesheet" href="style.css">
-  <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="config.js"></script>
 </head>
 <body>
   <!-- Sökfält -->
-  <div id="searchBar">
-    <input type="text" id="searchInput" placeholder="Sök plats eller adress...">
+  <div id="searchBox">
+    <input id="searchInput" type="text" placeholder="Sök plats, adress, POI..." />
     <button id="searchBtn">🔍</button>
   </div>
 
-  <!-- Kartan -->
+  <!-- Karta -->
   <div id="map"></div>
 
-  <!-- Kontroller (höger) -->
-  <div id="controls">
-    <button id="btnLocate">📍</button>
-    <button id="btnMeasure">📏</button>
-    <button id="btnShare">🔗</button>
-    <button id="btnReport">⚠️</button>
-    <button id="btnSettings">⚙️</button>
+  <!-- Directions panel -->
+  <div id="directionsBox">
+    <h3 id="directionsTitle">Vägbeskrivning</h3>
+    <div id="directionsList"></div>
+    <button id="cancelRouteBtn">Avbryt rutt</button>
   </div>
 
-  <!-- Vägbeskrivning (vänster) -->
-  <div id="directionsPanel">
-    <h3>Vägbeskrivning</h3>
-    <div id="directionsList">Ingen rutt aktiv.</div>
-    <div id="turnControls" class="hidden">
-      <button id="btnPrevStep">⬆️ Föregående</button>
-      <button id="btnNextStep">⬇️ Nästa</button>
-      <button id="btnCancelRoute">❌ Avbryt</button>
-    </div>
+  <!-- Settings panel -->
+  <div id="settingsBox">
+    <button onclick="openSettings()">⚙️ Inställningar</button>
   </div>
 
-  <!-- Favoriter -->
-  <div id="favoritesPanel">
-    <h3>Favoriter</h3>
-    <ul id="favList"></ul>
-    <button id="saveHome">🏠 Spara Hem</button>
-    <button id="saveWork">💼 Spara Jobb</button>
-  </div>
-
-  <!-- Senaste sökningar -->
-  <div id="recentPanel">
-    <h3>Senaste sökningar</h3>
-    <ul id="recentList"></ul>
-  </div>
-
-  <!-- Toast (notiser) -->
-  <div id="toast" class="hidden"></div>
-
-  <!-- Inställningar (popup) -->
-  <div id="settingsModal" class="hidden">
-    <div class="modalContent">
+  <!-- Settings popup -->
+  <div id="settingsPopup" class="popup">
+    <div class="popup-content">
       <h2>Inställningar</h2>
-      <label for="settingLanguage">Språk:</label>
-      <select id="settingLanguage">
+
+      <label for="langSelect">Språk:</label>
+      <select id="langSelect">
         <option value="sv">Svenska</option>
         <option value="en">English</option>
-        <option value="de">Deutsch</option>
-        <option value="es">Español</option>
       </select>
 
-      <label for="settingTheme">Tema:</label>
-      <select id="settingTheme">
+      <label for="themeSelect">Tema:</label>
+      <select id="themeSelect">
         <option value="light">Ljust</option>
         <option value="dark">Mörkt</option>
       </select>
 
-      <label for="settingUiPos">UI Placering:</label>
-      <select id="settingUiPos">
-        <option value="top">Uppe</option>
-        <option value="bottom">Nere</option>
+      <label for="modeSelect">Färdsätt:</label>
+      <select id="modeSelect">
+        <option value="driving">Bil 🚗</option>
+        <option value="cycling">Cykel 🚴</option>
+        <option value="walking">Gång 🚶</option>
+        <option value="public_transport">Kollektivtrafik 🚆</option>
       </select>
 
-      <label for="settingMode">Standard färdmedel:</label>
-      <select id="settingMode">
-        <option value="driving">🚗 Bil</option>
-        <option value="cycling">🚴 Cykel</option>
-        <option value="walking">🚶 Gång</option>
-        <option value="transit">🚌 Kollektivtrafik</option>
-      </select>
+      <label><input type="checkbox" id="followToggle"> Följ läge</label>
+      <label><input type="checkbox" id="mobileToggle"> Mobil-läge</label>
 
-      <label><input type="checkbox" id="toggleTraffic"> Visa trafik</label>
-      <label><input type="checkbox" id="toggleWeather"> Visa vädervarningar</label>
-      <label><input type="checkbox" id="togglePOI"> Visa POI (parkering/laddning)</label>
-      <label><input type="checkbox" id="toggleAutoReroute"> Automatisk omläggning av rutt</label>
-      <label><input type="checkbox" id="toggleRecenter"> Återpositionering</label>
-
-      <button id="saveSettingsBtn">Spara</button>
-      <button id="closeSettings">Stäng</button>
+      <div class="popup-buttons">
+        <button onclick="saveSettings()">Spara</button>
+        <button onclick="closeSettings()">Stäng</button>
+      </div>
     </div>
   </div>
 
-  <script src="config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
