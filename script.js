@@ -17,6 +17,19 @@ const savedTheme = localStorage.getItem("theme") || "light";
 if (savedTheme === "dark") darkTiles.addTo(map);
 else lightTiles.addTo(map);
 
+// ================= DEFAULTS & SETTINGS =================
+// Defaults / settings (load from localStorage or default)
+let settings = {
+  language: localStorage.getItem("language") || "sv",           // 'sv' | 'en'
+  theme: localStorage.getItem("theme") || "light",             // 'light' | 'dark'
+  mode: localStorage.getItem("mode") || "driving",             // 'driving'|'cycling'|'walking'|'public_transport'
+  follow: localStorage.getItem("follow") === "true" || false,
+  mobile: localStorage.getItem("mobile") === "true" || false,
+  // ResRobot parameters (for transit)
+  transit_products: localStorage.getItem("transit_products") || "502",   // 64 = buss
+  transit_maxwalk: parseInt(localStorage.getItem("transit_maxwalk") || "200", 10)
+};
+
 // ================= GPS POSITION =================
 function locateUser() {
   map.locate({ setView: true, watch: true, enableHighAccuracy: true });
